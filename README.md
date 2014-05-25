@@ -7,20 +7,31 @@ An elasticsearch repl written in Golang.
 Example usage:
 
 
-> host localhost
+\> host localhost
+
 Set server host: localhost
 
-> port 9200
+
+\> port 9200
+
 Set server port: 9200
 
-> index podcasts
+
+\> index podcasts
+
 Set index: podcasts
 
-> get _aliases
+
+\> get _aliases
+
 Request: http://localhost:9200/movies/_aliases
+
 {"movies-2014-05-04-2252":{"aliases":{"movies":{}}}}
 
-> get _search?q=title:thx1138
+
+\> get _search?q=title:thx1138
+
 Request: http://localhost:9200/movies/_search?q=title:thx1138
+
 {"took":5,"timed_out":false,"_shards":{"total":5,"successful":5....
 
