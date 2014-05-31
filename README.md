@@ -1,7 +1,10 @@
-elrepl
+elRepl
 ======
 
 An elasticsearch repl written in Golang.
+
+
+WARNING!  Do not use on valuable data!  This project is in the earliest stage of development.
 
 
 Example usage:
