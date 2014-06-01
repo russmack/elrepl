@@ -1,3 +1,4 @@
+// elRepl is a repl for elasticsearch.
 package main
 
 import (
@@ -25,10 +26,10 @@ const (
 	CommandLoad   = "load"
 	CommandGet    = "get"
 	CommandPost   = "post"
+	CommandPut    = "put"
 )
 
 var (
-	//Stdin *bufio.Reader
 	server        = Server{}
 	loadedRequest = LoadedRequest{}
 )
@@ -48,7 +49,7 @@ func displayWelcome() {
 	el Repl
 	=======
 
-	Welcome to elRepl, an elasticsearch repl.
+	Welcome to el Repl, an elasticsearch repl.
 	`
 
 	fmt.Println(message)
@@ -63,7 +64,6 @@ func reploop() {
 			fmt.Println(err)
 			break
 		}
-		//entry := strings.TrimLeft(entered[:len(entered)-1], "\t ")
 		entry := strings.Trim(entered, "\t \r\n")
 		output := dispatch(entry)
 		if len(output) > 0 {
@@ -102,6 +102,10 @@ func dispatch(entry string) string {
 		return handleLoad(entry)
 	case strings.HasPrefix(entry, CommandGet):
 		return handleGet(entry)
+	case strings.HasPrefix(entry, CommandPost):
+		return handlePost(entry)
+	case strings.HasPrefix(entry, CommandPut):
+		return handlePut(entry)
 	default:
 		return handleUnknownEntry(entry)
 	}
