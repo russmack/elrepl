@@ -19,14 +19,15 @@ type LoadedRequest struct {
 }
 
 const (
-	CommandServer = "host"
-	CommandPort   = "port"
-	CommandIndex  = "index"
-	CommandDir    = "dir"
-	CommandLoad   = "load"
-	CommandGet    = "get"
-	CommandPost   = "post"
-	CommandPut    = "put"
+	CommandServer  = "host"
+	CommandPort    = "port"
+	CommandIndex   = "index"
+	CommandDir     = "dir"
+	CommandLoad    = "load"
+	CommandGet     = "get"
+	CommandPost    = "post"
+	CommandPut     = "put"
+	CommandReindex = "reindex"
 )
 
 var (
@@ -106,6 +107,8 @@ func dispatch(entry string) string {
 		return handlePost(entry)
 	case strings.HasPrefix(entry, CommandPut):
 		return handlePut(entry)
+	case strings.HasPrefix(entry, CommandReindex):
+		return handleReindex(entry)
 	default:
 		return handleUnknownEntry(entry)
 	}
