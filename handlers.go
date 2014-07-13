@@ -35,12 +35,13 @@ func handleExit() string {
 	return ""
 }
 
-func handleUnknownEntry(entry string) string {
-	return fmt.Sprintf("Command not found: %s", entry)
+func handleUnknownEntry(cmd *Command) string {
+	return fmt.Sprintf("Command not found: %s", cmd.Name)
 }
 
-func handleServerSet(entry string) string {
-	arg := strings.TrimPrefix(entry, CommandServer+" ")
+func handleServerSet(cmd *Command) string {
+	//arg := strings.TrimPrefix(entry, CommandServer+" ")
+	arg := cmd.Args
 	server.host = arg
 	return "Set server host: " + arg
 }
@@ -49,8 +50,9 @@ func handleServerGet() string {
 	return "Server host: " + server.host
 }
 
-func handlePortSet(entry string) string {
-	arg := strings.TrimPrefix(entry, CommandPort+" ")
+func handlePortSet(cmd *Command) string {
+	//arg := strings.TrimPrefix(entry, CommandPort+" ")
+	arg := cmd.Args
 	server.port = arg
 	return "Set server port: " + arg
 }
@@ -59,8 +61,9 @@ func handlePortGet() string {
 	return "Server port: " + server.port
 }
 
-func handleIndexSet(entry string) string {
-	arg := strings.TrimPrefix(entry, CommandIndex+" ")
+func handleIndexSet(cmd *Command) string {
+	//arg := strings.TrimPrefix(entry, CommandIndex+" ")
+	arg := cmd.Args
 	server.index = arg
 	return "Set index: " + arg
 }
@@ -69,9 +72,10 @@ func handleIndexGet() string {
 	return "Index: " + server.index
 }
 
-func handleDir(entry string) string {
-	arg := strings.TrimPrefix(entry, CommandDir+" ")
-	if arg == "dir" {
+func handleDir(cmd *Command) string {
+	//arg := strings.TrimPrefix(entry, CommandDir+" ")
+	arg := cmd.Args
+	if arg == "" {
 		arg = "."
 	}
 	dirFiles, err := ioutil.ReadDir(arg)
@@ -85,8 +89,10 @@ func handleDir(entry string) string {
 	return files
 }
 
-func handleLoad(entry string) string {
-	arg := strings.TrimPrefix(entry, CommandLoad+" ")
+func handleLoad(cmd *Command) string {
+	//arg := strings.TrimPrefix(entry, CommandLoad+" ")
+	arg := cmd.Args
+
 	file, err := ioutil.ReadFile(arg)
 	if err != nil {
 		return err.Error()
@@ -96,8 +102,9 @@ func handleLoad(entry string) string {
 	return fileText
 }
 
-func handleGet(entry string) string {
-	arg := strings.TrimPrefix(entry, CommandGet+" ")
+func handleGet(cmd *Command) string {
+	//arg := strings.TrimPrefix(entry, CommandGet+" ")
+	arg := cmd.Args
 
 	url := ""
 	if server.index == "" {
@@ -118,8 +125,9 @@ func handleGet(entry string) string {
 // becomes
 // put movie/1 { "title": "Alien", "director": "Ridley Scott", "year": 1979, "genres": ["Science fiction"] }
 // Currently, must be on single line.
-func handlePut(entry string) string {
-	arg := strings.TrimPrefix(entry, CommandPut+" ")
+func handlePut(cmd *Command) string {
+	//arg := strings.TrimPrefix(entry, CommandPut+" ")
+	arg := cmd.Args
 
 	bodyIdx := strings.Index(arg, " ")
 	queryArgs := arg[:bodyIdx]
@@ -138,8 +146,9 @@ func handlePut(entry string) string {
 // becomes
 // post _search?pretty { "query": { "term": { "director": "scott" } } }
 // Currently, must be on single line.
-func handlePost(entry string) string {
-	arg := strings.TrimPrefix(entry, CommandPost+" ")
+func handlePost(cmd *Command) string {
+	//arg := strings.TrimPrefix(entry, CommandPost+" ")
+	arg := cmd.Args
 
 	bodyIdx := strings.Index(arg, " ")
 	queryArgs := arg[:bodyIdx]
@@ -155,8 +164,9 @@ func handlePost(entry string) string {
 }
 
 // reindex localhost:9200/srcindex/type localhost:9200/targetindex/routing
-func handleReindex(entry string) string {
-	args := strings.TrimPrefix(entry, CommandReindex+" ")
+func handleReindex(cmd *Command) string {
+	//args := strings.TrimPrefix(entry, CommandReindex+" ")
+	args := cmd.Args
 
 	// \w+|"[\w\s]*"
 	r, err := regexp.Compile(`^(.*?):(\d+?)/(.*?)/(.*?)/? (.*?):(\d+?)/(.*?)(/(.*?))?$`)
@@ -176,7 +186,7 @@ func handleReindex(entry string) string {
 	api.Domain = srcHost
 	api.Port = srcPort
 
-	scanArgs := map[string]interface{}{"search_type": "scan", "scroll": "1m", "size": "2"}
+	scanArgs := map[string]interface{}{"search_type": "scan", "scroll": "1m", "size": "1000"}
 	scanResult, err := core.SearchUri(srcIndex, srcType, scanArgs)
 	if err != nil {
 		fmt.Println("Failed getting scan result for index:", srcIndex, "; err:", err)

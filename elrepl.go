@@ -18,17 +18,33 @@ type LoadedRequest struct {
 	request string
 }
 
-const (
-	CommandServer  = "host"
-	CommandPort    = "port"
-	CommandIndex   = "index"
-	CommandDir     = "dir"
-	CommandLoad    = "load"
-	CommandGet     = "get"
-	CommandPost    = "post"
-	CommandPut     = "put"
-	CommandReindex = "reindex"
-)
+var Commands = struct {
+	Version string
+	Exit    string
+	Help    string
+	Host    string
+	Port    string
+	Index   string
+	Dir     string
+	Load    string
+	Get     string
+	Post    string
+	Put     string
+	Reindex string
+}{
+	Version: "version",
+	Exit:    "exit",
+	Help:    "help",
+	Host:    "host",
+	Port:    "port",
+	Index:   "index",
+	Dir:     "dir",
+	Load:    "load",
+	Get:     "get",
+	Post:    "post",
+	Put:     "put",
+	Reindex: "reindex",
+}
 
 var (
 	server        = Server{}
@@ -47,16 +63,15 @@ func main() {
 
 func displayWelcome() {
 	message := `
-	el Repl
-	=======
-
-	Welcome to el Repl, an elasticsearch repl.
+	elRepl  ::  elasticsearch repl
+	------------------------------
 	`
 
 	fmt.Println(message)
 }
 
 func reploop() {
+	commandParser := NewCommandParser()
 	for {
 		fmt.Print("> ")
 		in := bufio.NewReader(os.Stdin)
@@ -66,7 +81,11 @@ func reploop() {
 			break
 		}
 		entry := strings.Trim(entered, "\t \r\n")
-		output := dispatch(entry)
+		command, err := commandParser.Parse(entry)
+		if err != nil {
+			fmt.Println("Unable to parse command.")
+		}
+		output := dispatch(command)
 		if len(output) > 0 {
 			fmt.Println(output)
 			fmt.Println("")
@@ -74,42 +93,49 @@ func reploop() {
 	}
 }
 
-func dispatch(entry string) string {
-	if len(entry) == 0 {
-		return entry
+func dispatch(cmd *Command) string {
+	if cmd == nil {
+		return ""
 	}
-	switch {
-	case entry == "?" || entry == "help":
-		return handleHelp()
-	case entry == "version":
+
+	switch cmd.Name {
+	case Commands.Version:
 		return handleVersion()
-	case entry == "exit" || entry == "quit" || entry == "bye":
+	case Commands.Help:
+		return handleHelp()
+	case Commands.Exit:
 		return handleExit()
-	case strings.HasPrefix(entry, CommandServer+" "):
-		return handleServerSet(entry)
-	case entry == CommandServer:
-		return handleServerGet()
-	case strings.HasPrefix(entry, CommandPort+" "):
-		return handlePortSet(entry)
-	case entry == CommandPort:
-		return handlePortGet()
-	case strings.HasPrefix(entry, CommandIndex+" "):
-		return handleIndexSet(entry)
-	case entry == CommandIndex:
-		return handleIndexGet()
-	case strings.HasPrefix(entry, CommandDir):
-		return handleDir(entry)
-	case strings.HasPrefix(entry, CommandLoad):
-		return handleLoad(entry)
-	case strings.HasPrefix(entry, CommandGet):
-		return handleGet(entry)
-	case strings.HasPrefix(entry, CommandPost):
-		return handlePost(entry)
-	case strings.HasPrefix(entry, CommandPut):
-		return handlePut(entry)
-	case strings.HasPrefix(entry, CommandReindex):
-		return handleReindex(entry)
+	case Commands.Host:
+		if cmd.Args == "" {
+			return handleServerGet()
+		} else {
+			return handleServerSet(cmd)
+		}
+	case Commands.Port:
+		if cmd.Args == "" {
+			return handlePortGet()
+		} else {
+			return handlePortSet(cmd)
+		}
+	case Commands.Index:
+		if cmd.Args == "" {
+			return handleIndexGet()
+		} else {
+			return handleIndexSet(cmd)
+		}
+	case Commands.Dir:
+		return handleDir(cmd)
+	case Commands.Load:
+		return handleLoad(cmd)
+	case Commands.Get:
+		return handleGet(cmd)
+	case Commands.Post:
+		return handlePost(cmd)
+	case Commands.Put:
+		return handlePut(cmd)
+	case Commands.Reindex:
+		return handleReindex(cmd)
 	default:
-		return handleUnknownEntry(entry)
+		return handleUnknownEntry(cmd)
 	}
 }
