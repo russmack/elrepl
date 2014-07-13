@@ -4,7 +4,7 @@ elRepl
 An elasticsearch repl written in Golang.
 
 
-WARNING!  Do not use on valuable data!  This project is in the earliest stage of development.
+This project is in the earliest stage of development.
 
 
 Example usage:
@@ -26,5 +26,7 @@ Request: http://localhost:9200/movies/_aliases
 > get _search?q=title:thx1138
 Request: http://localhost:9200/movies/_search?q=title:thx1138
 {"took":5,"timed_out":false,"_shards":{"total":5,"successful":5....
+
+> reindex localhost:9200/srcindex/type localhost:9200/targetindex/routing
 
 ```
