@@ -7,6 +7,7 @@ import (
 	"io/ioutil"
 	"os"
 	"regexp"
+	"strconv"
 	"strings"
 )
 
@@ -100,6 +101,11 @@ func handleLoad(cmd *Command) string {
 	fileText := string(file)
 	loadedRequest.request = fileText
 	return fileText
+}
+
+func handleLog(cmd *Command) string {
+	logLevel = 1
+	return "Logging level set to: " + strconv.Itoa(logLevel)
 }
 
 func handleGet(cmd *Command) string {

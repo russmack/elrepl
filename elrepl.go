@@ -27,6 +27,7 @@ var Commands = struct {
 	Index   string
 	Dir     string
 	Load    string
+	Log     string
 	Get     string
 	Post    string
 	Put     string
@@ -40,6 +41,7 @@ var Commands = struct {
 	Index:   "index",
 	Dir:     "dir",
 	Load:    "load",
+	Log:     "log",
 	Get:     "get",
 	Post:    "post",
 	Put:     "put",
@@ -49,6 +51,7 @@ var Commands = struct {
 var (
 	server        = Server{}
 	loadedRequest = LoadedRequest{}
+	logLevel      = 0
 )
 
 func init() {
@@ -81,6 +84,9 @@ func reploop() {
 			break
 		}
 		entry := strings.Trim(entered, "\t \r\n")
+		if logLevel > 0 {
+			log(entry, logLevel)
+		}
 		command, err := commandParser.Parse(entry)
 		if err != nil {
 			fmt.Println("Unable to parse command.")
@@ -127,6 +133,8 @@ func dispatch(cmd *Command) string {
 		return handleDir(cmd)
 	case Commands.Load:
 		return handleLoad(cmd)
+	case Commands.Log:
+		return handleLog(cmd)
 	case Commands.Get:
 		return handleGet(cmd)
 	case Commands.Post:
@@ -138,4 +146,13 @@ func dispatch(cmd *Command) string {
 	default:
 		return handleUnknownEntry(cmd)
 	}
+}
+
+func log(entry string, logLevel int) {
+	f, err := os.OpenFile("elrepl.history.log", os.O_CREATE|os.O_APPEND, 0666)
+	if err != nil {
+		fmt.Println("Unable to open file for logging:", err)
+	}
+	defer f.Close()
+	f.WriteString(entry + "\r\n")
 }
