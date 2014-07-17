@@ -176,24 +176,6 @@ func handlePut(cmd *Command) string {
 	return res
 }
 
-// http://localhost:9200/movies/_search
-// localhost:9200/movies/_search
-// /movies/_search
-// movies/_search
-// http://localhost:9200/movies/movie/_search
-// localhost:9200/movies/movie/_search
-// /movies/movie/_search
-// movies/movie/_search
-// movie/_search
-
-// http://localhost:9200/movies/_search
-// http://localhost:9200/movies/movie/_search
-// localhost:9200/movies/movie/_search
-// localhost:9200/movies/_search
-// movies/movie/_search
-// movies/_search
-// movie/_search
-
 // curl -XPOST "http://localhost:9200/movies/_search?pretty" -d'{ ... body ... }''
 // becomes
 // post _search?pretty { "query": { "term": { "director": "scott" } } }
@@ -201,47 +183,17 @@ func handlePut(cmd *Command) string {
 func handlePost(cmd *Command) string {
 	queryHost := server.host
 	queryPort := server.port
-	//queryIndex := server.index
 
-	// TODO: being lazy, for now.  Implement parsing to get this from the query.
-	// This url parsing and construction is a bit of a mess.
-	if queryHost == "" || queryPort == "" {
-		return "Please set the host and port using 'host xxxxx' and 'port nnnn'."
-	}
-
-	if strings.HasPrefix(cmd.Args, "http://") || strings.HasPrefix(cmd.Args, "https://") {
-		return "Full url parsing not yet implemented. Please remove 'http://host:port' prefix from url."
-	}
-
-	//arg := strings.TrimPrefix(entry, CommandPost+" ")
 	arg := cmd.Args
-	arg = strings.Replace(arg, "\r\n", " ", -1)
-	arg = strings.Replace(arg, "\n", " ", -1)
 	bodyIdx := strings.Index(arg, "{")
 	queryArgs := arg[:bodyIdx]
+	queryArgs = strings.TrimPrefix(queryArgs, "/")
+	queryArgs = strings.TrimSpace(queryArgs)
 	body := arg[bodyIdx:]
-	//body = strings.Replace(body, "\n", "", -1)
 
-	queryArgs = strings.TrimPrefix(arg, "/")
-	/*
-		if queryIndex == "" {
-			cleanArg := strings.TrimPrefix(arg, "/")
-			if cleanArg != "" {
-				argParts := strings.Split(cleanArg, "/")
-				if len(argParts) > 0 {
-					queryIndex = argParts[0]
-				}
-			}
-		}
-	*/
-	fmt.Println("queryHost:", queryHost)
-	fmt.Println("queryPort:", queryPort)
-	//fmt.Println("queryIndex:", queryIndex)
-	fmt.Println("queryArgs:", queryArgs)
-	//url := fmt.Sprintf("http://%s:%s/%s/%s", queryHost, queryPort, queryIndex, queryArgs)
 	url := fmt.Sprintf("http://%s:%s/%s", queryHost, queryPort, queryArgs)
+
 	fmt.Println("Request:", url)
-	fmt.Println("----")
 	res, err := postHttpResource(url, body)
 	if err != nil {
 		return err.Error()
