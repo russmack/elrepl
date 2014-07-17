@@ -44,10 +44,11 @@ func (p *CommandParser) initCommands() (map[string]*regexp.Regexp, error) {
 	commandPatternMap[Commands.Host] = "(host)(( )(.*))"
 	commandPatternMap[Commands.Port] = "(port)( )(.*)"
 	commandPatternMap[Commands.Dir] = "(dir)( )(.*)"
-	commandPatternMap[Commands.Load] = "(load)( )(.*)"
 	commandPatternMap[Commands.Log] = "(log)( )(.*)"
+	commandPatternMap[Commands.Load] = "(load)( )(.*)"
+	commandPatternMap[Commands.Run] = "(run)( )(.*)"
 	commandPatternMap[Commands.Get] = "(get)( )(.*)"
-	commandPatternMap[Commands.Post] = "(post)( )(.*)"
+	commandPatternMap[Commands.Post] = "((?i)post(?-i))( )(.*)"
 	commandPatternMap[Commands.Put] = "(put)( )(.*)"
 
 	for k, v := range commandPatternMap {

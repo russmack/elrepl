@@ -26,8 +26,9 @@ var Commands = struct {
 	Port    string
 	Index   string
 	Dir     string
-	Load    string
 	Log     string
+	Load    string
+	Run     string
 	Get     string
 	Post    string
 	Put     string
@@ -40,8 +41,9 @@ var Commands = struct {
 	Port:    "port",
 	Index:   "index",
 	Dir:     "dir",
-	Load:    "load",
 	Log:     "log",
+	Load:    "load",
+	Run:     "run",
 	Get:     "get",
 	Post:    "post",
 	Put:     "put",
@@ -113,9 +115,9 @@ func dispatch(cmd *Command) string {
 		return handleExit()
 	case Commands.Host:
 		if cmd.Args == "" {
-			return handleServerGet()
+			return handleHostGet()
 		} else {
-			return handleServerSet(cmd)
+			return handleHostSet(cmd)
 		}
 	case Commands.Port:
 		if cmd.Args == "" {
@@ -131,10 +133,12 @@ func dispatch(cmd *Command) string {
 		}
 	case Commands.Dir:
 		return handleDir(cmd)
-	case Commands.Load:
-		return handleLoad(cmd)
 	case Commands.Log:
 		return handleLog(cmd)
+	case Commands.Load:
+		return handleLoad(cmd)
+	case Commands.Run:
+		return handleRun(cmd)
 	case Commands.Get:
 		return handleGet(cmd)
 	case Commands.Post:
