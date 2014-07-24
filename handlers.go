@@ -203,6 +203,7 @@ func handlePost(cmd *Command) string {
 
 // reindex localhost:9200/srcindex/type localhost:9200/targetindex/routing
 func handleReindex(cmd *Command) string {
+	fmt.Println("Reindexing...")
 	//args := strings.TrimPrefix(entry, CommandReindex+" ")
 	args := cmd.Args
 
@@ -211,7 +212,9 @@ func handleReindex(cmd *Command) string {
 	if err != nil {
 		return err.Error()
 	}
+	fmt.Println("Parsing command...")
 	matches := r.FindAllStringSubmatch(args, -1)[0]
+	fmt.Println("Parsed matches:", len(matches))
 	srcHost := matches[1]
 	srcPort := matches[2]
 	srcIndex := matches[3]
@@ -224,6 +227,7 @@ func handleReindex(cmd *Command) string {
 	api.Domain = srcHost
 	api.Port = srcPort
 
+	fmt.Println("Scanning...")
 	scanArgs := map[string]interface{}{"search_type": "scan", "scroll": "1m", "size": "1000"}
 	scanResult, err := core.SearchUri(srcIndex, srcType, scanArgs)
 	if err != nil {
@@ -237,6 +241,7 @@ func handleReindex(cmd *Command) string {
 	counter := 0
 	failures := 0
 
+	fmt.Println("Scrolling...")
 	scrollArgs := map[string]interface{}{"scroll": "1m"}
 	scrollResult, err := core.Scroll(scrollArgs, scrollId)
 	if err != nil {
@@ -244,6 +249,7 @@ func handleReindex(cmd *Command) string {
 		return err.Error()
 	}
 
+	fmt.Println("Indexing...")
 	var indexArgs map[string]interface{} = nil
 	if tgtRouting != "" {
 		indexArgs = map[string]interface{}{"routing": tgtRouting}
