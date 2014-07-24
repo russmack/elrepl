@@ -103,10 +103,13 @@ func reploop() {
 }
 
 func log(entry string, logLevel int) {
-	f, err := os.OpenFile("elrepl.history.log", os.O_CREATE|os.O_APPEND, 0666)
+	f, err := os.OpenFile("elrepl.history.log", os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0666)
 	if err != nil {
 		fmt.Println("Unable to open file for logging:", err)
 	}
 	defer f.Close()
-	f.WriteString(entry + "\r\n")
+	_, err = f.WriteString(entry + "\r\n")
+	if err != nil {
+		fmt.Println("Unable to write to log file:", err)
+	}
 }
