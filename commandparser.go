@@ -50,6 +50,7 @@ func (p *CommandParser) initCommands() (map[string]*regexp.Regexp, error) {
 	commandPatternMap[Commands.Get] = "(get)( )(.*)"
 	commandPatternMap[Commands.Post] = "((?i)post(?-i))( )(.*)"
 	commandPatternMap[Commands.Put] = "(put)( )(.*)"
+	commandPatternMap[Commands.Reindex] = "(reindex)( )(.*)"
 
 	for k, v := range commandPatternMap {
 		r, err := regexp.Compile(v)
