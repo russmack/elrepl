@@ -164,8 +164,14 @@ func handlePut(cmd *Command) string {
 	arg := cmd.Args
 
 	bodyIdx := strings.Index(arg, " ")
-	queryArgs := arg[:bodyIdx]
-	body := arg[bodyIdx:]
+	queryArgs := ""
+	if bodyIdx > -1 {
+		queryArgs = arg[:bodyIdx]
+	}
+	body := ""
+	if bodyIdx > -1 {
+		body = arg[bodyIdx:]
+	}
 
 	url := fmt.Sprintf("http://%s:%s/%s/%s", server.host, server.port, server.index, queryArgs)
 	fmt.Println("Request:", url)
@@ -259,6 +265,7 @@ func handleReindex(cmd *Command) string {
 		for _, j := range scrollResult.Hits.Hits {
 			api.Domain = tgtHost
 			api.Port = tgtPort
+
 			_, err := core.Index(tgtIndex, srcType, j.Id, indexArgs, j.Source)
 			if err != nil {
 				fmt.Println("Failed inserting document, id:", j.Id, "; ", err)
