@@ -4,6 +4,8 @@ package main
 import (
 	"bufio"
 	"fmt"
+	"github.com/russmack/elrepl/handlers"
+	//"github.com/russmack/elrepl/types"
 	"os"
 	"strings"
 )
@@ -54,6 +56,7 @@ var (
 	server        = Server{}
 	loadedRequest = LoadedRequest{}
 	logLevel      = 0
+	//handlerRegistry = []*Handler{}
 )
 
 func init() {
@@ -63,6 +66,12 @@ func init() {
 
 func main() {
 	displayWelcome()
+	//register()
+	fmt.Println("Handlers available:")
+	//for _, j := range handlerRegistry {
+	for k, v := range handlers.HandlerRegistry {
+		fmt.Println(k, ":", v.CommandName)
+	}
 	reploop()
 }
 

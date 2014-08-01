@@ -1,6 +1,7 @@
 package main
 
 import (
+	"github.com/russmack/elrepl/types"
 	"regexp"
 	"strings"
 )
@@ -19,7 +20,7 @@ func NewCommandParser() *CommandParser {
 	return &p
 }
 
-func (p *CommandParser) Parse(entry string) (*Command, error) {
+func (p *CommandParser) Parse(entry string) (*types.Command, error) {
 	parts := strings.SplitN(entry, " ", 2)
 	cmdName := parts[0]
 	cmdArgs := ""
@@ -28,7 +29,7 @@ func (p *CommandParser) Parse(entry string) (*Command, error) {
 	}
 	cmdRe, ok := p.commandRegexpMap[cmdName]
 	if ok {
-		return NewCommand(cmdName, cmdArgs, cmdRe), nil
+		return types.NewCommand(cmdName, cmdArgs, cmdRe), nil
 	} else {
 		return nil, nil
 	}

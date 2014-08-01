@@ -1,6 +1,9 @@
 package main
 
-import ()
+import (
+	"github.com/russmack/elrepl/handlers"
+	"github.com/russmack/elrepl/types"
+)
 
 type Dispatcher struct {
 	//
@@ -10,10 +13,14 @@ func NewDispatcher() *Dispatcher {
 	return &Dispatcher{}
 }
 
-func (d *Dispatcher) Dispatch(cmd *Command) string {
+func (d *Dispatcher) Dispatch(cmd *types.Command) string {
 	if cmd == nil {
 		return ""
 	}
+
+	s := handlers.HandlerRegistry[cmd.Name].HandlerFunc(cmd)
+
+	return "cool: " + s
 
 	switch cmd.Name {
 	case Commands.Version:
