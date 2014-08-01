@@ -4,13 +4,10 @@ import (
 	"fmt"
 	"github.com/mattbaird/elastigo/api"
 	"github.com/mattbaird/elastigo/core"
-	//"io/ioutil"
-	//"os"
 	"regexp"
-	//"strconv"
-	//"strings"
 )
 
+// reindex localhost:9200/srcindex/type localhost:9200/targetindex/routing
 func init() {
 	h := NewHandler()
 	h.CommandName = "reindex"

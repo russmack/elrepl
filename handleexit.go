@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	//"github.com/russmack/elrepl/types"
 	"os"
 )
 

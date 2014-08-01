@@ -18,39 +18,6 @@ type LoadedRequest struct {
 	request string
 }
 
-/*
-var Commands = struct {
-	Version string
-	Exit    string
-	Help    string
-	Host    string
-	Port    string
-	Index   string
-	Dir     string
-	Log     string
-	Load    string
-	Run     string
-	Get     string
-	Post    string
-	Put     string
-	Reindex string
-}{
-	Version: "version",
-	Exit:    "exit",
-	Help:    "help",
-	Host:    "host",
-	Port:    "port",
-	Index:   "index",
-	Dir:     "dir",
-	Log:     "log",
-	Load:    "load",
-	Run:     "run",
-	Get:     "get",
-	Post:    "post",
-	Put:     "put",
-	Reindex: "reindex",
-}
-*/
 var (
 	server          = Server{}
 	loadedRequest   = LoadedRequest{}
@@ -77,7 +44,6 @@ func displayWelcome() {
 	elRepl  ::  elasticsearch repl
 	------------------------------
 	`
-
 	fmt.Println(message)
 }
 
@@ -100,8 +66,6 @@ func reploop() {
 		if err != nil {
 			fmt.Println("Unable to parse command.")
 		}
-		//h := HandlerRegistry[command.Name]
-
 		output := dispatcher.Dispatch(command)
 		if len(output) > 0 {
 			fmt.Println(output)

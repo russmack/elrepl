@@ -1,9 +1,5 @@
 package main
 
-import (
-//"fmt"
-)
-
 type Handler struct {
 	CommandName    string
 	CommandPattern string

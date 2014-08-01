@@ -1,10 +1,5 @@
 package main
 
-//import (
-//"fmt"
-//"github.com/russmack/elrepl/types"
-//)
-
 func init() {
 	h := NewHandler()
 	h.CommandName = "version"

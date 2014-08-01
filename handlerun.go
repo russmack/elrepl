@@ -22,14 +22,18 @@ func init() {
 		if err != nil {
 			return "Unable to parse loaded query for run command."
 		}
+		dispatcher := NewDispatcher()
 		if strings.ToLower(loadedCmd) == "post" {
-			resp := handlePost(newCmd)
+			//resp := HandlerRegistry[newCmd.Name]
+			resp := dispatcher.Dispatch(newCmd)
 			return resp
 		} else if strings.ToLower(loadedCmd) == "put" {
-			resp := handlePut(newCmd)
+			//resp := handlePut(newCmd)
+			resp := dispatcher.Dispatch(newCmd)
 			return resp
 		} else if strings.ToLower(loadedCmd) == "get" {
-			resp := handleGet(newCmd)
+			//resp := handleGet(newCmd)
+			resp := dispatcher.Dispatch(newCmd)
 			return resp
 		}
 		return "Unable to run loaded query."
