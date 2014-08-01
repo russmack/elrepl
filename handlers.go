@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"github.com/mattbaird/elastigo/api"
 	"github.com/mattbaird/elastigo/core"
-	"github.com/russmack/elrepl/types"
+	//"github.com/russmack/elrepl/types"
 	"io/ioutil"
 	"os"
 	"regexp"
@@ -37,11 +37,11 @@ func handleExit() string {
 	return ""
 }
 
-func handleUnknownEntry(cmd *types.Command) string {
+func handleUnknownEntry(cmd *Command) string {
 	return fmt.Sprintf("Command not found: %s", cmd.Name)
 }
 
-func handleHostSet(cmd *types.Command) string {
+func handleHostSet(cmd *Command) string {
 	//arg := strings.TrimPrefix(entry, CommandServer+" ")
 	arg := cmd.Args
 	server.host = arg
@@ -52,7 +52,7 @@ func handleHostGet() string {
 	return "Server host: " + server.host
 }
 
-func handlePortSet(cmd *types.Command) string {
+func handlePortSet(cmd *Command) string {
 	//arg := strings.TrimPrefix(entry, CommandPort+" ")
 	arg := cmd.Args
 	server.port = arg
@@ -63,7 +63,7 @@ func handlePortGet() string {
 	return "Server port: " + server.port
 }
 
-func handleIndexSet(cmd *types.Command) string {
+func handleIndexSet(cmd *Command) string {
 	//arg := strings.TrimPrefix(entry, CommandIndex+" ")
 	arg := cmd.Args
 	server.index = arg
@@ -74,7 +74,7 @@ func handleIndexGet() string {
 	return "Index: " + server.index
 }
 
-func handleDir(cmd *types.Command) string {
+func handleDir(cmd *Command) string {
 	//arg := strings.TrimPrefix(entry, CommandDir+" ")
 	arg := cmd.Args
 	if arg == "" {
@@ -91,12 +91,12 @@ func handleDir(cmd *types.Command) string {
 	return files
 }
 
-func handleLog(cmd *types.Command) string {
+func handleLog(cmd *Command) string {
 	logLevel = 1
 	return "Logging level set to: " + strconv.Itoa(logLevel)
 }
 
-func handleLoad(cmd *types.Command) string {
+func handleLoad(cmd *Command) string {
 	//arg := strings.TrimPrefix(entry, CommandLoad+" ")
 	arg := cmd.Args
 
@@ -109,7 +109,7 @@ func handleLoad(cmd *types.Command) string {
 	return fileText
 }
 
-func handleRun(cmd *types.Command) string {
+func handleRun(cmd *Command) string {
 	//arg := cmd.Args
 	loadedParts := strings.SplitN(loadedRequest.request, "\n", 2)
 
@@ -137,7 +137,7 @@ func handleRun(cmd *types.Command) string {
 	return "Unable to run loaded query."
 }
 
-func handleGet(cmd *types.Command) string {
+func handleGet(cmd *Command) string {
 	//arg := strings.TrimPrefix(entry, CommandGet+" ")
 	arg := cmd.Args
 
@@ -160,7 +160,7 @@ func handleGet(cmd *types.Command) string {
 // becomes
 // put movie/1 { "title": "Alien", "director": "Ridley Scott", "year": 1979, "genres": ["Science fiction"] }
 // Currently, must be on single line.
-func handlePut(cmd *types.Command) string {
+func handlePut(cmd *Command) string {
 	//arg := strings.TrimPrefix(entry, CommandPut+" ")
 	arg := cmd.Args
 
@@ -187,7 +187,7 @@ func handlePut(cmd *types.Command) string {
 // becomes
 // post _search?pretty { "query": { "term": { "director": "scott" } } }
 // Currently, must be on single line.
-func handlePost(cmd *types.Command) string {
+func handlePost(cmd *Command) string {
 	queryHost := server.host
 	queryPort := server.port
 
@@ -209,7 +209,7 @@ func handlePost(cmd *types.Command) string {
 }
 
 // reindex localhost:9200/srcindex/type localhost:9200/targetindex/routing
-func handleReindex(cmd *types.Command) string {
+func handleReindex(cmd *Command) string {
 	fmt.Println("Reindexing...")
 	//args := strings.TrimPrefix(entry, CommandReindex+" ")
 	args := cmd.Args

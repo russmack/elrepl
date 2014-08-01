@@ -1,17 +1,16 @@
-package handlers
+package main
 
 import (
 	"fmt"
-	"github.com/russmack/elrepl/types"
+	//"github.com/russmack/elrepl/types"
 	"os"
 )
 
 func init() {
-	fmt.Println("REGISTERING HANDLER: VERSION")
-	h := types.NewHandler()
+	h := NewHandler()
 	h.CommandName = "exit"
 	h.CommandPattern = "(exit)( )(.*)"
-	h.HandlerFunc = func(cmd *types.Command) string {
+	h.HandlerFunc = func(cmd *Command) string {
 		fmt.Println("Bye.")
 		os.Exit(0)
 		return ""

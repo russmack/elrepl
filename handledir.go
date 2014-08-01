@@ -1,17 +1,14 @@
-package handlers
+package main
 
 import (
-	"fmt"
-	"github.com/russmack/elrepl/types"
 	"io/ioutil"
 )
 
 func init() {
-	fmt.Println("REGISTERING HANDLER: DIR")
-	h := types.NewHandler()
+	h := NewHandler()
 	h.CommandName = "dir"
 	h.CommandPattern = "(dir)( )(.*)"
-	h.HandlerFunc = func(cmd *types.Command) string {
+	h.HandlerFunc = func(cmd *Command) string {
 		arg := cmd.Args
 		if arg == "" {
 			arg = "."

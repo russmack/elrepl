@@ -1,7 +1,6 @@
 package main
 
 import (
-	"github.com/russmack/elrepl/types"
 	"regexp"
 	"strings"
 )
@@ -12,46 +11,49 @@ type CommandParser struct {
 
 func NewCommandParser() *CommandParser {
 	p := CommandParser{}
-	cmds, err := p.initCommands()
-	if err != nil {
-		panic(err)
-	}
-	p.commandRegexpMap = cmds
+	//cmds, err := p.initCommands()
+	//if err != nil {
+	//	panic(err)
+	//}
+	//p.commandRegexpMap = cmds
 	return &p
 }
 
-func (p *CommandParser) Parse(entry string) (*types.Command, error) {
+func (p *CommandParser) Parse(entry string) (*Command, error) {
 	parts := strings.SplitN(entry, " ", 2)
 	cmdName := parts[0]
 	cmdArgs := ""
 	if len(parts) > 1 {
 		cmdArgs = parts[1]
 	}
-	cmdRe, ok := p.commandRegexpMap[cmdName]
-	if ok {
-		return types.NewCommand(cmdName, cmdArgs, cmdRe), nil
-	} else {
-		return nil, nil
-	}
+	//cmdRe, ok := p.commandRegexpMap[cmdName]
+	//if ok {
+	//	return NewCommand(cmdName, cmdArgs, cmdRe), nil
+	//} else {
+	//	return nil, nil
+	//}
+	return NewCommand(cmdName, cmdArgs), nil
 }
 
+/*
 func (p *CommandParser) initCommands() (map[string]*regexp.Regexp, error) {
 	commandPatternMap := make(map[string]string)
 	commandRegexpMap := make(map[string]*regexp.Regexp)
 
-	commandPatternMap[Commands.Version] = "(version)(( )(.*))"
-	commandPatternMap[Commands.Help] = "(help)( )(.*)"
-	commandPatternMap[Commands.Exit] = "(exit)( )(.*)"
-	commandPatternMap[Commands.Host] = "(host)(( )(.*))"
-	commandPatternMap[Commands.Port] = "(port)( )(.*)"
-	commandPatternMap[Commands.Dir] = "(dir)( )(.*)"
-	commandPatternMap[Commands.Log] = "(log)( )(.*)"
-	commandPatternMap[Commands.Load] = "(load)( )(.*)"
-	commandPatternMap[Commands.Run] = "(run)( )(.*)"
-	commandPatternMap[Commands.Get] = "(get)( )(.*)"
 	commandPatternMap[Commands.Post] = "((?i)post(?-i))( )(.*)"
-	commandPatternMap[Commands.Put] = "(put)( )(.*)"
 	commandPatternMap[Commands.Reindex] = "(reindex)( )(.*)"
+
+	commandPatternMap[Commands.Put] = "(put)( )(.*)"
+	commandPatternMap[Commands.Get] = "(get)( )(.*)"
+	commandPatternMap[Commands.Run] = "(run)( )(.*)"
+	commandPatternMap[Commands.Load] = "(load)( )(.*)"
+	commandPatternMap[Commands.Log] = "(log)( )(.*)"
+	commandPatternMap[Commands.Port] = "(port)( )(.*)"
+	commandPatternMap[Commands.Host] = "(host)(( )(.*))"
+	commandPatternMap[Commands.Dir] = "(dir)( )(.*)"
+	commandPatternMap[Commands.Exit] = "(exit)( )(.*)"
+	commandPatternMap[Commands.Help] = "(help)( )(.*)"
+	commandPatternMap[Commands.Version] = "(version)(( )(.*))"
 
 	for k, v := range commandPatternMap {
 		r, err := regexp.Compile(v)
@@ -62,3 +64,4 @@ func (p *CommandParser) initCommands() (map[string]*regexp.Regexp, error) {
 	}
 	return commandRegexpMap, nil
 }
+*/

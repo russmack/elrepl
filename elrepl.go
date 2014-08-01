@@ -4,8 +4,6 @@ package main
 import (
 	"bufio"
 	"fmt"
-	"github.com/russmack/elrepl/handlers"
-	//"github.com/russmack/elrepl/types"
 	"os"
 	"strings"
 )
@@ -20,6 +18,7 @@ type LoadedRequest struct {
 	request string
 }
 
+/*
 var Commands = struct {
 	Version string
 	Exit    string
@@ -51,12 +50,12 @@ var Commands = struct {
 	Put:     "put",
 	Reindex: "reindex",
 }
-
+*/
 var (
-	server        = Server{}
-	loadedRequest = LoadedRequest{}
-	logLevel      = 0
-	//handlerRegistry = []*Handler{}
+	server          = Server{}
+	loadedRequest   = LoadedRequest{}
+	logLevel        = 0
+	HandlerRegistry = make(map[string]*Handler)
 )
 
 func init() {
@@ -66,10 +65,8 @@ func init() {
 
 func main() {
 	displayWelcome()
-	//register()
 	fmt.Println("Handlers available:")
-	//for _, j := range handlerRegistry {
-	for k, v := range handlers.HandlerRegistry {
+	for k, v := range HandlerRegistry {
 		fmt.Println(k, ":", v.CommandName)
 	}
 	reploop()
@@ -103,6 +100,8 @@ func reploop() {
 		if err != nil {
 			fmt.Println("Unable to parse command.")
 		}
+		//h := HandlerRegistry[command.Name]
+
 		output := dispatcher.Dispatch(command)
 		if len(output) > 0 {
 			fmt.Println(output)
