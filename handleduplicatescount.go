@@ -59,11 +59,12 @@ func init() {
 		}
 
 		fmt.Println("Counting...")
-		counts := make(map[string]int)
+		counts := make(map[string]*Duplicate)
 		var f interface{}
 		for len(scrollResult.Hits.Hits) > 0 {
 			fmt.Println("Scroll result hits:", len(scrollResult.Hits.Hits))
 			for _, j := range scrollResult.Hits.Hits {
+				docId := j.Id
 				err := json.Unmarshal(*j.Source, &f)
 				if err != nil {
 					fmt.Println("ERR:", err)
@@ -75,9 +76,12 @@ func init() {
 						if k == srcField {
 							_, ok := counts[vv]
 							if ok {
-								counts[vv]++
+								counts[vv].Count = counts[vv].Count + 1
 							} else {
-								counts[vv] = 1
+								counts[vv] = &Duplicate{}
+								counts[vv].Count = 1
+								counts[vv].Value = vv
+								counts[vv].Id = docId
 							}
 						}
 					default:
@@ -106,33 +110,39 @@ func init() {
 	HandlerRegistry[h.CommandName] = h
 }
 
+type Duplicate struct {
+	Id    string
+	Value string
+	Count int
+}
+
 func dispMap(counts map[string]int) {
 	for k, v := range counts {
 		fmt.Print(k, ":", v, "|")
 	}
 }
 
-func dispPairList(counts map[string]int) {
+func dispPairList(counts map[string]*Duplicate) {
 	pairlist := sortMapByValue(counts)
 	tot := len(pairlist)
 	fmt.Println("total:", tot)
 	duplicated := 0
 	for i, _ := range pairlist {
-		if pairlist[i].Value > 1 {
+		if pairlist[i].Duplicate.Count > 1 {
 			duplicated++
 		}
 	}
 	for i := tot - 1; i > tot-30; i-- {
-		if pairlist[i].Value > 1 {
-			fmt.Println(pairlist[i].Value, " : ", pairlist[i].Key)
+		if pairlist[i].Duplicate.Count > 1 {
+			fmt.Println(pairlist[i].Duplicate.Count, " : ", pairlist[i].Duplicate.Id, " : ", pairlist[i].Key)
 		}
 	}
 	fmt.Println(duplicated, "duplicated.")
 }
 
 type Pair struct {
-	Key   string
-	Value int
+	Key       string
+	Duplicate *Duplicate
 }
 
 // A slice of Pairs that implements sort.Interface to sort by Value.
@@ -140,10 +150,10 @@ type PairList []Pair
 
 func (p PairList) Swap(i, j int)      { p[i], p[j] = p[j], p[i] }
 func (p PairList) Len() int           { return len(p) }
-func (p PairList) Less(i, j int) bool { return p[i].Value < p[j].Value }
+func (p PairList) Less(i, j int) bool { return p[i].Duplicate.Count < p[j].Duplicate.Count }
 
 // A function to turn a map into a PairList, then sort and return it.
-func sortMapByValue(m map[string]int) PairList {
+func sortMapByValue(m map[string]*Duplicate) PairList {
 	p := make(PairList, len(m))
 	i := 0
 	for k, v := range m {
