@@ -76,12 +76,13 @@ func init() {
 						if k == srcField {
 							_, ok := counts[vv]
 							if ok {
-								counts[vv].Count = counts[vv].Count + 1
+								counts[vv].Count++
+								counts[vv].IdList = append(counts[vv].IdList, docId)
 							} else {
 								counts[vv] = &Duplicate{}
 								counts[vv].Count = 1
 								counts[vv].Value = vv
-								counts[vv].Id = docId
+								counts[vv].IdList = []string{docId}
 							}
 						}
 					default:
@@ -111,9 +112,9 @@ func init() {
 }
 
 type Duplicate struct {
-	Id    string
-	Value string
-	Count int
+	IdList []string
+	Value  string
+	Count  int
 }
 
 func dispMap(counts map[string]int) {
@@ -134,7 +135,7 @@ func dispPairList(counts map[string]*Duplicate) {
 	}
 	for i := tot - 1; i > tot-30; i-- {
 		if pairlist[i].Duplicate.Count > 1 {
-			fmt.Println(pairlist[i].Duplicate.Count, " : ", pairlist[i].Duplicate.Id, " : ", pairlist[i].Key)
+			fmt.Println(pairlist[i].Duplicate.Count, " : ", pairlist[i].Key, " : ", pairlist[i].Duplicate.IdList)
 		}
 	}
 	fmt.Println(duplicated, "duplicated.")
