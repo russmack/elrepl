@@ -32,7 +32,7 @@ func init() {
 		tgtHost := matches[5]
 		tgtPort := matches[6]
 		tgtIndex := matches[7]
-		tgtRouting := matches[8]
+		tgtRouting := matches[9]
 
 		api.Domain = srcHost
 		api.Port = srcPort
