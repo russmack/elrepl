@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"net/url"
 	"strings"
 )
 
@@ -13,12 +14,18 @@ func init() {
 		argParts := strings.Split(cmd.Args, " ")
 		arg := "_aliases?pretty"
 		index := ""
-		url := ""
+		urlString := ""
 		res := ""
 		if len(argParts) == 0 {
-			url = fmt.Sprintf("http://%s:%s/%s", server.host, server.port, arg)
-			fmt.Println("Request:", url)
-			getRes, err := getHttpResource(url)
+			u := new(url.URL)
+			u.Scheme = "http"
+			u.Host = server.host + ":" + server.port
+			u.Path = "_aliases"
+			q := u.Query()
+			q.Add("pretty", "true")
+			u.RawQuery = q.Encode()
+			fmt.Println("Request:", u)
+			getRes, err := getHttpResource(u.String())
 			if err != nil {
 				return err.Error()
 			}
@@ -29,9 +36,18 @@ func init() {
 			} else {
 				index = argParts[0]
 			}
-			url = fmt.Sprintf("http://%s:%s/%s/%s", server.host, server.port, index, arg)
-			fmt.Println("Request:", url)
-			getRes, err := getHttpResource(url)
+
+			u := new(url.URL)
+			u.Scheme = "http"
+			u.Host = server.host + ":" + server.port
+			u.Path = index + "/" + "_aliases"
+			q := u.Query()
+			q.Add("pretty", "true")
+			u.RawQuery = q.Encode()
+
+			//urlString = fmt.Sprintf("http://%s:%s/%s/%s", server.host, server.port, index, arg)
+			fmt.Println("Request:", u)
+			getRes, err := getHttpResource(u.String())
 			if err != nil {
 				return err.Error()
 			}
@@ -43,9 +59,9 @@ func init() {
 				//post _search?pretty { "query": { "term": { "director": "scott" } } }
 				indexName := argParts[1]
 				aliasName := argParts[2]
-				url = "post " + arg + " " + "{\"actions\": [ { \"add\": { \"index\": \"" + indexName + "\", \"alias\": \"" + aliasName + "\" } } ] }"
+				urlString = "post " + arg + " " + "{\"actions\": [ { \"add\": { \"index\": \"" + indexName + "\", \"alias\": \"" + aliasName + "\" } } ] }"
 				cmdParser := NewCommandParser()
-				newCmd, err := cmdParser.Parse(url)
+				newCmd, err := cmdParser.Parse(urlString)
 				if err != nil {
 					return err.Error()
 				}
@@ -55,9 +71,9 @@ func init() {
 				//curl -XPOST "http://10.1.1.12:9200/_aliases" -d '{ "actions": [ { "remove": { "index": "podcasts-2014-05-07-0103", "alias": "podcastsupdater" } } ] }'
 				indexName := argParts[1]
 				aliasName := argParts[2]
-				url = "post " + arg + " " + "{\"actions\": [ { \"remove\": { \"index\": \"" + indexName + "\", \"alias\": \"" + aliasName + "\" } } ] }"
+				urlString = "post " + arg + " " + "{\"actions\": [ { \"remove\": { \"index\": \"" + indexName + "\", \"alias\": \"" + aliasName + "\" } } ] }"
 				cmdParser := NewCommandParser()
-				newCmd, err := cmdParser.Parse(url)
+				newCmd, err := cmdParser.Parse(urlString)
 				if err != nil {
 					return err.Error()
 				}

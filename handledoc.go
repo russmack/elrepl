@@ -2,7 +2,7 @@ package main
 
 import (
 	"fmt"
-	//"net/url"
+	"net/url"
 	"strings"
 )
 
@@ -14,19 +14,19 @@ func init() {
 		argParts := strings.SplitN(cmd.Args, " ", 3)
 
 		arg := "_mget?pretty"
-		url := ""
+		urlString := ""
 		res := ""
 		fmt.Println("ARGS:", argParts)
 		if argParts[0] == "get" {
 			indexName := argParts[1]
 			ids := argParts[2]
-			//url = fmt.Sprintf("http://%s:%s", server.host, server.port)
+			//urlString = fmt.Sprintf("http://%s:%s", server.host, server.port)
 			//indexName := argParts[1]
 			//aliasName := argParts[2]
 			// "ids" : ["1", "1"]
-			url = "post " + indexName + "/" + arg + " " + "{\"ids\": " + ids + " }"
+			urlString = "post " + indexName + "/" + arg + " " + "{\"ids\": " + ids + " }"
 			cmdParser := NewCommandParser()
-			newCmd, err := cmdParser.Parse(url)
+			newCmd, err := cmdParser.Parse(urlString)
 			if err != nil {
 				return err.Error()
 			}
@@ -38,9 +38,18 @@ func init() {
 			delArgs := strings.Split(argParts[2], " ")
 			typeName := delArgs[0]
 			id := delArgs[1]
-			url = fmt.Sprintf("http://%s:%s/%s/%s/%s", server.host, server.port, indexName, typeName, id)
-			fmt.Println("Request:", url)
-			delRes, err := deleteHttpResource(url)
+
+			u := new(url.URL)
+			u.Scheme = "http"
+			u.Host = server.host + ":" + server.port
+			u.Path = indexName + "/" + typeName + "/" + id
+			q := u.Query()
+			q.Add("pretty", "true")
+			u.RawQuery = q.Encode()
+
+			//urlString = fmt.Sprintf("http://%s:%s/%s/%s/%s", server.host, server.port, indexName, typeName, id)
+			fmt.Println("Request:", u)
+			delRes, err := deleteHttpResource(u.String())
 			if err != nil {
 				return err.Error()
 			}

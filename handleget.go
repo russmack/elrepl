@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"net/url"
 )
 
 func init() {
@@ -11,15 +12,14 @@ func init() {
 	h.HandlerFunc = func(cmd *Command) string {
 		arg := cmd.Args
 
-		url := ""
-		if server.index == "" {
-			url = fmt.Sprintf("http://%s:%s/%s", server.host, server.port, arg)
-		} else {
-			url = fmt.Sprintf("http://%s:%s/%s/%s", server.host, server.port, server.index, arg)
+		u := new(url.URL)
+		newUrl, err := u.Parse(arg)
+		if err != nil {
+			return "Unable to parse url: " + err.Error()
 		}
 
-		fmt.Println("Request:", url)
-		res, err := getHttpResource(url)
+		fmt.Println("Request:", newUrl)
+		res, err := getHttpResource(newUrl.String())
 		if err != nil {
 			return err.Error()
 		}
