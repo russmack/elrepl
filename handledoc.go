@@ -32,6 +32,19 @@ func init() {
 			}
 			dispatcher := NewDispatcher()
 			res = dispatcher.Dispatch(newCmd)
+		} else if argParts[0] == "delete" {
+			//curl -XDELETE 'http://localhost:9200/twitter/tweet/1'
+			indexName := argParts[1]
+			delArgs := strings.Split(argParts[2], " ")
+			typeName := delArgs[0]
+			id := delArgs[1]
+			url = fmt.Sprintf("http://%s:%s/%s/%s/%s", server.host, server.port, indexName, typeName, id)
+			fmt.Println("Request:", url)
+			delRes, err := deleteHttpResource(url)
+			if err != nil {
+				return err.Error()
+			}
+			res = delRes
 		}
 		//fmt.Println("Request:", url)
 		//res, err := getHttpResource(url)
