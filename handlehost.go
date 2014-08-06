@@ -1,11 +1,8 @@
 package main
 
-import (
-	"fmt"
-)
+import ()
 
 func init() {
-	fmt.Println("REGISTERING HANDLER: HOST")
 	h := NewHandler()
 	h.CommandName = "host"
 	h.CommandPattern = "(host)(( )(.*))"
