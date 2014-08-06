@@ -33,8 +33,8 @@ func init() {
 func main() {
 	displayWelcome()
 	fmt.Println("Handlers available:")
-	for k, v := range HandlerRegistry {
-		fmt.Println(k, ":", v.CommandName)
+	for k, _ := range HandlerRegistry {
+		fmt.Println(k)
 	}
 	reploop()
 }
