@@ -10,8 +10,13 @@ func init() {
 	h := NewHandler()
 	h.CommandName = "status"
 	h.CommandPattern = "(status)( )(.*)"
-	h.CommandParser = func(cmd *Command) map[string]string {
+	h.CommandParser = func(cmd *Command) (map[string]string, bool) {
 		argParts := strings.Split(cmd.Args, " ")
+
+		if len(argParts) == 0 {
+			return nil, false
+		}
+
 		m := make(map[string]string)
 		m["scheme"] = "http"
 		m["host"] = server.host
@@ -20,10 +25,13 @@ func init() {
 		if argParts[0] != "/" {
 			m["index"] = argParts[0]
 		}
-		return m
+		return m, true
 	}
 	h.HandlerFunc = func(cmd *Command) string {
-		m := h.CommandParser(cmd)
+		m, ok := h.CommandParser(cmd)
+		if !ok {
+			return "Usage:"
+		}
 		u := new(url.URL)
 		u.Scheme = m["scheme"]
 		u.Host = m["host"] + ":" + m["port"]
