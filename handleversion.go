@@ -9,15 +9,21 @@ func init() {
 	h := NewHandler()
 	h.CommandName = "version"
 	h.CommandPattern = "(version)(( )(.*))"
-	h.CommandParser = func(cmd *Command) map[string]string {
+	h.CommandParser = func(cmd *Command) (map[string]string, bool) {
+		if cmd.Args != "" {
+			return nil, false
+		}
 		m := make(map[string]string)
 		m["scheme"] = "http"
 		m["host"] = server.host
 		m["port"] = server.port
-		return m
+		return m, true
 	}
 	h.HandlerFunc = func(cmd *Command) string {
-		m := h.CommandParser(cmd)
+		m, ok := h.CommandParser(cmd)
+		if !ok {
+			return "Usage: version"
+		}
 		u := new(url.URL)
 		u.Scheme = m["scheme"]
 		u.Host = m["host"] + ":" + m["port"]
