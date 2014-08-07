@@ -11,23 +11,15 @@ func init() {
 	h.CommandName = "delete"
 	h.CommandPattern = "(delete)( )(.*)"
 	h.HandlerFunc = func(cmd *Command) string {
-		argParts := strings.Split(cmd.Args, " ")
-
-		// TODO: This handler is not implemented.
-
+		arg := cmd.Args
 		u := new(url.URL)
-		u.Scheme = "http"
-		u.Host = server.host + ":" + server.port
-		u.Path = server.index + "/" + "_aliases"
-		u.RawQuery = u.Query().Add("pretty", "true")
-		//if server.index == "" {
-		//	url = fmt.Sprintf("http://%s:%s/%s", server.host, server.port, arg)
-		//} else {
-		//url = fmt.Sprintf("http://%s:%s/%s/%s", server.host, server.port, server.index, arg)
-		//}
+		newUrl, err := u.Parse(arg)
+		if err != nil {
+			return "Unable to parse url: " + err.Error()
+		}
 
-		fmt.Println("Request:", u)
-		res, err := deleteHttpResource(u.String())
+		fmt.Println("Request:", newUrl)
+		res, err := deleteHttpResource(newUrl.String())
 		if err != nil {
 			return err.Error()
 		}

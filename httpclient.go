@@ -64,12 +64,9 @@ func putHttpResource(url string, body string) (string, error) {
 	return string(out), err
 }
 
-//func deleteHttpResource(url string, body string) (string, error) {
 func deleteHttpResource(url string) (string, error) {
 	client := NewTimeoutClient(10*time.Second, 15*time.Second)
 
-	//reader := strings.NewReader(body)
-	//req, err := http.NewRequest("DELETE", url, reader)
 	req, err := http.NewRequest("DELETE", url, nil)
 
 	resp, err := client.Do(req)
