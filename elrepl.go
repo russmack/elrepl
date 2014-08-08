@@ -85,3 +85,7 @@ func log(entry string, logLevel int) {
 		fmt.Println("Unable to write to log file:", err)
 	}
 }
+
+func usageMessage(msg string) string {
+	return "Usage: " + msg
+}

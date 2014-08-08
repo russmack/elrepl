@@ -9,7 +9,11 @@ func init() {
 	h := NewHandler()
 	h.CommandName = "version"
 	h.CommandPattern = "(version)(( )(.*))"
+	h.Usage = "version"
 	h.CommandParser = func(cmd *Command) (map[string]string, bool) {
+		if cmd.Args == "/?" {
+			return nil, false
+		}
 		if cmd.Args != "" {
 			return nil, false
 		}
@@ -22,7 +26,7 @@ func init() {
 	h.HandlerFunc = func(cmd *Command) string {
 		m, ok := h.CommandParser(cmd)
 		if !ok {
-			return "Usage: version"
+			return usageMessage(h.Usage)
 		}
 		u := new(url.URL)
 		u.Scheme = m["scheme"]

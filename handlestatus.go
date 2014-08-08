@@ -10,6 +10,7 @@ func init() {
 	h := NewHandler()
 	h.CommandName = "status"
 	h.CommandPattern = "(status)( )(.*)"
+	h.Usage = "status [/|indexName]"
 	h.CommandParser = func(cmd *Command) (map[string]string, bool) {
 		argParts := strings.Split(cmd.Args, " ")
 		if len(argParts) != 1 {
@@ -28,7 +29,7 @@ func init() {
 	h.HandlerFunc = func(cmd *Command) string {
 		m, ok := h.CommandParser(cmd)
 		if !ok {
-			return "Usage: status [/|indexName]"
+			return usageMessage(h.Usage)
 		}
 		u := new(url.URL)
 		u.Scheme = m["scheme"]

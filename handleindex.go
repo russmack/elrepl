@@ -8,6 +8,7 @@ func init() {
 	h := NewHandler()
 	h.CommandName = "index"
 	h.CommandPattern = "(index)(( )(.*))"
+	h.Usage = "index [indexName]"
 	h.CommandParser = func(cmd *Command) (map[string]string, bool) {
 		if cmd.Args == "/?" {
 			return nil, false
@@ -27,7 +28,7 @@ func init() {
 	h.HandlerFunc = func(cmd *Command) string {
 		m, ok := h.CommandParser(cmd)
 		if !ok {
-			return "Usage: index [indexName]"
+			return usageMessage(h.Usage)
 		}
 		indexName, ok := m["index"]
 		if !ok {
