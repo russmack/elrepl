@@ -1,28 +1,31 @@
 package main
 
-import ()
+import (
+	"sort"
+)
 
 func init() {
 	h := NewHandler()
 	h.CommandName = "help"
 	h.CommandPattern = "(help)( )(.*)"
+	h.Usage = "help"
 	h.HandlerFunc = func(cmd *Command) string {
 		cmdList := ""
-
+		keys := []string{}
 		for k, _ := range HandlerRegistry {
-			cmdList += k + "\n"
+			keys = append(keys, k)
 		}
-
+		sort.Strings(keys)
+		for _, s := range keys {
+			cmdList += s + ": " + HandlerRegistry[s].Usage + "\n"
+		}
 		return `
-Help
-----
-Commands:
+	Help
+	----
+
+Commands
+--------
 ` + cmdList + `
-eg:
-host localhost
-port 9200
-index movies
-get _search?q=title:thx1138
 `
 	}
 	HandlerRegistry[h.CommandName] = h
