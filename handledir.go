@@ -8,6 +8,7 @@ func init() {
 	h := NewHandler()
 	h.CommandName = "dir"
 	h.CommandPattern = "(dir)( )(.*)"
+	h.Usage = "dir"
 	h.HandlerFunc = func(cmd *Command) string {
 		arg := cmd.Args
 		if arg == "" {

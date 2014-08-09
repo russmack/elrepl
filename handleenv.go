@@ -4,6 +4,7 @@ func init() {
 	h := NewHandler()
 	h.CommandName = "env"
 	h.CommandPattern = "(env)(( )(.*))"
+	h.Usage = "env"
 	h.HandlerFunc = func(cmd *Command) string {
 		return `
 	elRepl version 0.1

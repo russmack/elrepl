@@ -14,6 +14,7 @@ func init() {
 	h := NewHandler()
 	h.CommandName = "duplicatescount"
 	h.CommandPattern = "(duplicatescount)(( )(.*))"
+	h.Usage = "duplicatecount host:port/index/type/field"
 	h.HandlerFunc = func(cmd *Command) string {
 		fmt.Println("Finding duplicates...")
 		//args := strings.TrimPrefix(entry, CommandReindex+" ")

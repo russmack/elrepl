@@ -8,6 +8,7 @@ func init() {
 	h := NewHandler()
 	h.CommandName = "run"
 	h.CommandPattern = "(run)( )(.*)"
+	h.Usage = "run"
 	h.HandlerFunc = func(cmd *Command) string {
 		loadedParts := strings.SplitN(loadedRequest.request, "\n", 2)
 

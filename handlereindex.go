@@ -12,6 +12,7 @@ func init() {
 	h := NewHandler()
 	h.CommandName = "reindex"
 	h.CommandPattern = "(reindex)( )(.*)"
+	h.Usage = "reindex sourceHost:port/sourceIndex/sourceType targetHost:port/targetIndex[/routing]"
 	h.HandlerFunc = func(cmd *Command) string {
 		fmt.Println("Reindexing...")
 		//args := strings.TrimPrefix(entry, CommandReindex+" ")

@@ -10,6 +10,7 @@ func init() {
 	h := NewHandler()
 	h.CommandName = "doc"
 	h.CommandPattern = "(doc)(( )(.*))"
+	h.Usage = "doc (get index docId) | (delete index type docId)"
 	h.HandlerFunc = func(cmd *Command) string {
 		argParts := strings.SplitN(cmd.Args, " ", 3)
 

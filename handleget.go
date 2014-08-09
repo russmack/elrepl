@@ -9,6 +9,7 @@ func init() {
 	h := NewHandler()
 	h.CommandName = "get"
 	h.CommandPattern = "(get)( )(.*)"
+	h.Usage = "get url"
 	h.HandlerFunc = func(cmd *Command) string {
 		arg := cmd.Args
 

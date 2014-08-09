@@ -8,6 +8,7 @@ func init() {
 	h := NewHandler()
 	h.CommandName = "load"
 	h.CommandPattern = "(load)( )(.*)"
+	h.Usage = "load filename"
 	h.HandlerFunc = func(cmd *Command) string {
 		arg := cmd.Args
 
