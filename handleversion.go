@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"net/url"
+	"strings"
 )
 
 func init() {
@@ -10,27 +11,30 @@ func init() {
 	h.CommandName = "version"
 	h.CommandPattern = "(version)(( )(.*))"
 	h.Usage = "version"
-	h.CommandParser = func(cmd *Command) (map[string]string, bool) {
-		if cmd.Args == "/?" {
-			return nil, false
+	h.CommandParser = func(cmd *Command) (ParseMap, bool) {
+		argParts := strings.Split(cmd.Args, " ")
+		p := ParseMap{}
+		p["scheme"] = "http"
+		p["host"] = server.host
+		p["port"] = server.port
+
+		switch argParts[0] {
+		case "/?":
+			return p, false
+		case "":
+			return p, true
+		default:
+			return p, false
 		}
-		if cmd.Args != "" {
-			return nil, false
-		}
-		m := make(map[string]string)
-		m["scheme"] = "http"
-		m["host"] = server.host
-		m["port"] = server.port
-		return m, true
 	}
 	h.HandlerFunc = func(cmd *Command) string {
-		m, ok := h.CommandParser(cmd)
+		p, ok := h.CommandParser(cmd)
 		if !ok {
 			return usageMessage(h.Usage)
 		}
 		u := new(url.URL)
-		u.Scheme = m["scheme"]
-		u.Host = m["host"] + ":" + m["port"]
+		u.Scheme = p["scheme"]
+		u.Host = p["host"] + ":" + p["port"]
 		fmt.Println("Request:", u)
 		res, err := getHttpResource(u.String())
 		if err != nil {

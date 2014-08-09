@@ -12,7 +12,7 @@ func init() {
 	h.CommandName = "alias"
 	h.CommandPattern = "(alias)( )(.*)"
 	h.Usage = "alias (create indexName aliasName) | (remove indexName aliasName) | (move fromIndex toIndex aliasName)"
-	h.CommandParse = func(cmd *Command) (ParseMap, bool) {
+	h.CommandParser = func(cmd *Command) (ParseMap, bool) {
 		argParts := strings.Split(cmd.Args, " ")
 		p := ParseMap{}
 		p["scheme"] = "http"
@@ -54,7 +54,7 @@ func init() {
 		return p, true
 	}
 	h.HandlerFunc = func(cmd *Command) string {
-		p, ok := h.CommandParse(cmd)
+		p, ok := h.CommandParser(cmd)
 		if !ok {
 			return usageMessage(h.Usage)
 		}

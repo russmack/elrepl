@@ -9,28 +9,34 @@ func init() {
 	h.CommandName = "index"
 	h.CommandPattern = "(index)(( )(.*))"
 	h.Usage = "index [indexName]"
-	h.CommandParser = func(cmd *Command) (map[string]string, bool) {
-		if cmd.Args == "/?" {
-			return nil, false
-		}
+	h.CommandParser = func(cmd *Command) (ParseMap, bool) {
 		argParts := strings.Split(cmd.Args, " ")
-		if len(argParts) > 1 {
-			return nil, false
-		}
-		if len(argParts) == 1 && argParts[0] == "" {
-			return nil, true
-		} else {
-			m := make(map[string]string)
-			m["index"] = argParts[0]
-			return m, true
+		p := ParseMap{}
+
+		switch argParts[0] {
+		case "/?":
+			return p, false
+		case "":
+			if len(argParts) == 1 { // get index
+				return p, true
+			} else {
+				return p, false
+			}
+		default:
+			if len(argParts) == 1 { // set index
+				p["index"] = argParts[0]
+				return p, true
+			} else {
+				return p, false
+			}
 		}
 	}
 	h.HandlerFunc = func(cmd *Command) string {
-		m, ok := h.CommandParser(cmd)
+		p, ok := h.CommandParser(cmd)
 		if !ok {
 			return usageMessage(h.Usage)
 		}
-		indexName, ok := m["index"]
+		indexName, ok := p["index"]
 		if !ok {
 			return "Index: " + server.index
 		} else {

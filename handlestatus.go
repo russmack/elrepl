@@ -11,34 +11,45 @@ func init() {
 	h.CommandName = "status"
 	h.CommandPattern = "(status)( )(.*)"
 	h.Usage = "status [/|indexName]"
-	h.CommandParser = func(cmd *Command) (map[string]string, bool) {
+	h.CommandParser = func(cmd *Command) (ParseMap, bool) {
 		argParts := strings.Split(cmd.Args, " ")
-		if len(argParts) != 1 {
-			return nil, false
+		p := ParseMap{}
+		p["scheme"] = "http"
+		p["host"] = server.host
+		p["port"] = server.port
+		p["endpoint"] = "_status"
+
+		switch argParts[0] {
+		case "/?":
+			return p, false
+		case "":
+			if len(argParts) == 1 {
+				return p, true
+			} else {
+				return p, false
+			}
+		default:
+			if len(argParts) == 1 {
+				p["index"] = argParts[0]
+				return p, true
+			} else {
+				return p, false
+			}
 		}
-		m := make(map[string]string)
-		m["scheme"] = "http"
-		m["host"] = server.host
-		m["port"] = server.port
-		m["endpoint"] = "_status"
-		if argParts[0] != "/" {
-			m["index"] = argParts[0]
-		}
-		return m, true
 	}
 	h.HandlerFunc = func(cmd *Command) string {
-		m, ok := h.CommandParser(cmd)
+		p, ok := h.CommandParser(cmd)
 		if !ok {
 			return usageMessage(h.Usage)
 		}
 		u := new(url.URL)
-		u.Scheme = m["scheme"]
-		u.Host = m["host"] + ":" + m["port"]
-		index, ok := m["index"]
+		u.Scheme = p["scheme"]
+		u.Host = p["host"] + ":" + p["port"]
+		index, ok := p["index"]
 		if ok {
 			index += "/"
 		}
-		u.Path = index + m["endpoint"]
+		u.Path = index + p["endpoint"]
 		q := u.Query()
 		q.Add("pretty", "true")
 		u.RawQuery = q.Encode()
