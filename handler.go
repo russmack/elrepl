@@ -5,6 +5,7 @@ type Handler struct {
 	CommandPattern string
 	Usage          string
 	CommandParser  func(*Command) (map[string]string, bool)
+	CommandParse   func(*Command) (ParseMap, bool)
 	HandlerFunc    func(*Command) string
 }
 
