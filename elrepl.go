@@ -32,10 +32,7 @@ func init() {
 
 func main() {
 	displayWelcome()
-	fmt.Println("Handlers available:")
-	for k, _ := range HandlerRegistry {
-		fmt.Println(k)
-	}
+	//displayAvailableHandlers()
 	reploop()
 }
 
@@ -45,6 +42,13 @@ func displayWelcome() {
 	------------------------------
 	`
 	fmt.Println(message)
+}
+
+func displayAvailableHandlers() {
+	fmt.Println("Handlers available:")
+	for k, _ := range HandlerRegistry {
+		fmt.Println(k)
+	}
 }
 
 func reploop() {
