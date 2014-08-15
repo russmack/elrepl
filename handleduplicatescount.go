@@ -5,34 +5,47 @@ import (
 	"fmt"
 	"github.com/mattbaird/elastigo/api"
 	"github.com/mattbaird/elastigo/core"
-	"regexp"
 	"sort"
 )
 
-// duplicatescount localhost:9200/srcindex/type/field
 func init() {
 	h := NewHandler()
 	h.CommandName = "duplicatescount"
 	h.CommandPattern = "(duplicatescount)(( )(.*))"
-	h.Usage = "duplicatecount host:port/index/type/field"
+	h.Usage = "duplicatecount [host port] index type field"
+	h.CommandParser = func(cmd *Command) (ParseMap, bool) {
+		p := ParseMap{}
+		switch len(cmd.Args) {
+		case 3:
+			p["host"] = server.host
+			p["port"] = server.port
+			p["index"] = cmd.Args[0]
+			p["type"] = cmd.Args[1]
+			p["field"] = cmd.Args[2]
+		case 5:
+			p["host"] = cmd.Args[0]
+			p["port"] = cmd.Args[1]
+			p["index"] = cmd.Args[2]
+			p["type"] = cmd.Args[3]
+			p["field"] = cmd.Args[4]
+		default:
+			//case "/?"
+			//case ""
+			return p, false
+		}
+		return p, true
+	}
 	h.HandlerFunc = func(cmd *Command) string {
 		fmt.Println("Finding duplicates...")
-		//args := strings.TrimPrefix(entry, CommandReindex+" ")
-		args := cmd.Args
-
-		// \w+|"[\w\s]*"
-		r, err := regexp.Compile(`^(.*?):(\d+?)/(.*?)/(.*?)/(.*?)$`)
-		if err != nil {
-			return err.Error()
+		p, ok := h.CommandParser(cmd)
+		if !ok {
+			return usageMessage(h.Usage)
 		}
-		fmt.Println("Parsing command...")
-		matches := r.FindAllStringSubmatch(args, -1)[0]
-		fmt.Println("Parsed matches:", len(matches))
-		srcHost := matches[1]
-		srcPort := matches[2]
-		srcIndex := matches[3]
-		srcType := matches[4]
-		srcField := matches[5]
+		srcHost := p["host"]
+		srcPort := p["port"]
+		srcIndex := p["index"]
+		srcType := p["tyep"]
+		srcField := p["field"]
 
 		api.Domain = srcHost
 		api.Port = srcPort
@@ -102,12 +115,8 @@ func init() {
 				return err.Error()
 			}
 		}
-
-		//dispMap(counts)
 		dispPairList(counts)
-
 		return fmt.Sprintf("Total processed: %d.  %d failed.", counter, failures)
-
 	}
 	HandlerRegistry[h.CommandName] = h
 }

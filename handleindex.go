@@ -1,8 +1,6 @@
 package main
 
-import (
-	"strings"
-)
+import ()
 
 func init() {
 	h := NewHandler()
@@ -10,21 +8,20 @@ func init() {
 	h.CommandPattern = "(index)(( )(.*))"
 	h.Usage = "index [indexName]"
 	h.CommandParser = func(cmd *Command) (ParseMap, bool) {
-		argParts := strings.Split(cmd.Args, " ")
 		p := ParseMap{}
 
-		switch argParts[0] {
+		switch cmd.Args[0] {
 		case "/?":
 			return p, false
 		case "":
-			if len(argParts) == 1 { // get index
+			if len(cmd.Args) == 1 { // get index
 				return p, true
 			} else {
 				return p, false
 			}
 		default:
-			if len(argParts) == 1 { // set index
-				p["index"] = argParts[0]
+			if len(cmd.Args) == 1 { // set index
+				p["index"] = cmd.Args[0]
 				return p, true
 			} else {
 				return p, false

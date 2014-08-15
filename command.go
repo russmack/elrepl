@@ -6,10 +6,10 @@ import (
 
 type Command struct {
 	Name    string
-	Args    string
+	Args    []string
 	Pattern *regexp.Regexp
 }
 
-func NewCommand(name string, args string) *Command {
+func NewCommand(name string, args []string) *Command {
 	return &Command{Name: name, Args: args}
 }

@@ -14,7 +14,7 @@ func init() {
 	h.CommandName = "put"
 	h.CommandPattern = "(put)( )(.*)"
 	h.HandlerFunc = func(cmd *Command) string {
-		arg := cmd.Args
+		arg := cmd.Args[0]
 
 		bodyIdx := strings.Index(arg, " ")
 		queryArgs := ""

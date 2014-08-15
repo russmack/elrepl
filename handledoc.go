@@ -12,7 +12,8 @@ func init() {
 	h.CommandPattern = "(doc)(( )(.*))"
 	h.Usage = "doc (get index docId) | (delete index type docId)"
 	h.HandlerFunc = func(cmd *Command) string {
-		argParts := strings.SplitN(cmd.Args, " ", 3)
+		//argParts := strings.SplitN(cmd.Args, " ", 3)
+		argParts := cmd.Args
 
 		arg := "_mget?pretty"
 		urlString := ""

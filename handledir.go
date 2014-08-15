@@ -10,7 +10,7 @@ func init() {
 	h.CommandPattern = "(dir)( )(.*)"
 	h.Usage = "dir"
 	h.HandlerFunc = func(cmd *Command) string {
-		arg := cmd.Args
+		arg := cmd.Args[0]
 		if arg == "" {
 			arg = "."
 		}

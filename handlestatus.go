@@ -3,7 +3,6 @@ package main
 import (
 	"fmt"
 	"net/url"
-	"strings"
 )
 
 func init() {
@@ -12,25 +11,24 @@ func init() {
 	h.CommandPattern = "(status)( )(.*)"
 	h.Usage = "status [/|indexName]"
 	h.CommandParser = func(cmd *Command) (ParseMap, bool) {
-		argParts := strings.Split(cmd.Args, " ")
 		p := ParseMap{}
 		p["scheme"] = "http"
 		p["host"] = server.host
 		p["port"] = server.port
 		p["endpoint"] = "_status"
 
-		switch argParts[0] {
+		switch cmd.Args[0] {
 		case "/?":
 			return p, false
 		case "":
-			if len(argParts) == 1 {
+			if len(cmd.Args) == 1 {
 				return p, true
 			} else {
 				return p, false
 			}
 		default:
-			if len(argParts) == 1 {
-				p["index"] = argParts[0]
+			if len(cmd.Args) == 1 {
+				p["index"] = cmd.Args[0]
 				return p, true
 			} else {
 				return p, false

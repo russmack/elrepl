@@ -17,7 +17,7 @@ func init() {
 		queryHost := server.host
 		queryPort := server.port
 
-		arg := cmd.Args
+		arg := cmd.Args[0]
 		bodyIdx := strings.Index(arg, "{")
 		queryArgs := arg[:bodyIdx]
 		queryArgs = strings.TrimPrefix(queryArgs, "/")

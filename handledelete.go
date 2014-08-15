@@ -10,8 +10,9 @@ func init() {
 	h := NewHandler()
 	h.CommandName = "delete"
 	h.CommandPattern = "(delete)( )(.*)"
+	// TODO: usage
 	h.HandlerFunc = func(cmd *Command) string {
-		arg := cmd.Args
+		arg := cmd.Args[0]
 		u := new(url.URL)
 		newUrl, err := u.Parse(arg)
 		if err != nil {

@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"github.com/mattbaird/elastigo/api"
 	"github.com/mattbaird/elastigo/core"
-	"regexp"
 )
 
 // reindex localhost:9200/srcindex/type localhost:9200/targetindex/routing
@@ -12,28 +11,42 @@ func init() {
 	h := NewHandler()
 	h.CommandName = "reindex"
 	h.CommandPattern = "(reindex)( )(.*)"
-	h.Usage = "reindex sourceHost:port/sourceIndex/sourceType targetHost:port/targetIndex[/routing]"
+	h.Usage = "reindex sourceHost port sourceIndex sourceType targetHost port targetIndex [routing]"
+	h.CommandParser = func(cmd *Command) (ParseMap, bool) {
+		p := ParseMap{}
+		argsCount := len(cmd.Args)
+		if argsCount == 7 || argsCount == 8 {
+			p["srcHost"] = cmd.Args[0]
+			p["srcPort"] = cmd.Args[1]
+			p["srcIndex"] = cmd.Args[2]
+			p["srcType"] = cmd.Args[3]
+			p["tgtHost"] = cmd.Args[4]
+			p["tgtPort"] = cmd.Args[5]
+			p["tgtIndex"] = cmd.Args[6]
+			if argsCount == 8 {
+				p["tgtRouting"] = cmd.Args[7]
+			}
+		} else {
+			//case "/?"
+			//case ""
+			return p, false
+		}
+		return p, true
+	}
 	h.HandlerFunc = func(cmd *Command) string {
 		fmt.Println("Reindexing...")
-		//args := strings.TrimPrefix(entry, CommandReindex+" ")
-		args := cmd.Args
-
-		// \w+|"[\w\s]*"
-		r, err := regexp.Compile(`^(.*?):(\d+?)/(.*?)/(.*?)/? (.*?):(\d+?)/(.*?)(/(.*?))?$`)
-		if err != nil {
-			return err.Error()
+		p, ok := h.CommandParser(cmd)
+		if !ok {
+			return usageMessage(h.Usage)
 		}
-		fmt.Println("Parsing command...")
-		matches := r.FindAllStringSubmatch(args, -1)[0]
-		fmt.Println("Parsed matches:", len(matches))
-		srcHost := matches[1]
-		srcPort := matches[2]
-		srcIndex := matches[3]
-		srcType := matches[4]
-		tgtHost := matches[5]
-		tgtPort := matches[6]
-		tgtIndex := matches[7]
-		tgtRouting := matches[9]
+		srcHost := p["srcHost"]
+		srcPort := p["srcPort"]
+		srcIndex := p["srcIndex"]
+		srcType := p["srcType"]
+		tgtHost := p["tgtHost"]
+		tgtPort := p["tgtPort"]
+		tgtIndex := p["tgtIndex"]
+		tgtRouting := p["tgtRouting"]
 
 		api.Domain = srcHost
 		api.Port = srcPort

@@ -11,7 +11,7 @@ func init() {
 	h.CommandPattern = "(get)( )(.*)"
 	h.Usage = "get url"
 	h.HandlerFunc = func(cmd *Command) string {
-		arg := cmd.Args
+		arg := cmd.Args[0]
 
 		u := new(url.URL)
 		newUrl, err := u.Parse(arg)

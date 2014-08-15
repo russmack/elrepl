@@ -4,49 +4,54 @@ import (
 	"errors"
 	"fmt"
 	"net/url"
-	"strings"
 )
 
 func init() {
 	h := NewHandler()
 	h.CommandName = "alias"
 	h.CommandPattern = "(alias)( )(.*)"
-	h.Usage = "alias (create indexName aliasName) | (remove indexName aliasName) | (move fromIndex toIndex aliasName)"
+	h.Usage = "alias (create host port indexName aliasName) | (remove host port indexName aliasName) | (move host port fromIndex toIndex aliasName)"
 	h.CommandParser = func(cmd *Command) (ParseMap, bool) {
-		argParts := strings.Split(cmd.Args, " ")
 		p := ParseMap{}
 		p["scheme"] = "http"
-		p["host"] = server.host
-		p["port"] = server.port
 		p["endpoint"] = "_aliases"
-
-		switch argParts[0] {
+		switch cmd.Args[0] {
 		case "/?":
 			return p, false
 		case "":
-			if len(argParts) == 1 { // list all
+			if len(cmd.Args) == 1 { // list all
+				// Session vars for read ops only.
 				p["action"] = "list"
-				return p, true
+				p["host"] = server.host
+				p["port"] = server.port
 			} else {
 				return p, false
 			}
 		case "create":
 			p["action"] = "create"
-			p["index"] = argParts[1]
-			p["alias"] = argParts[2]
+			p["host"] = cmd.Args[1]
+			p["port"] = cmd.Args[2]
+			p["index"] = cmd.Args[3]
+			p["alias"] = cmd.Args[4]
 		case "remove":
 			p["action"] = "remove"
-			p["index"] = argParts[1]
-			p["alias"] = argParts[2]
+			p["host"] = cmd.Args[1]
+			p["port"] = cmd.Args[2]
+			p["index"] = cmd.Args[3]
+			p["alias"] = cmd.Args[4]
 		case "move":
 			p["action"] = "move"
-			p["fromIndex"] = argParts[1]
-			p["toIndex"] = argParts[2]
-			p["alias"] = argParts[3]
+			p["host"] = cmd.Args[1]
+			p["port"] = cmd.Args[2]
+			p["fromIndex"] = cmd.Args[3]
+			p["toIndex"] = cmd.Args[4]
+			p["alias"] = cmd.Args[5]
 		default:
-			if len(argParts) == 1 { // list index
+			if len(cmd.Args) == 1 { // list index
 				p["action"] = "list"
-				p["index"] = argParts[0]
+				p["host"] = server.host
+				p["port"] = server.port
+				p["index"] = cmd.Args[0]
 			} else {
 				return p, false
 			}

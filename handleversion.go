@@ -3,7 +3,6 @@ package main
 import (
 	"fmt"
 	"net/url"
-	"strings"
 )
 
 func init() {
@@ -12,13 +11,12 @@ func init() {
 	h.CommandPattern = "(version)(( )(.*))"
 	h.Usage = "version"
 	h.CommandParser = func(cmd *Command) (ParseMap, bool) {
-		argParts := strings.Split(cmd.Args, " ")
 		p := ParseMap{}
 		p["scheme"] = "http"
 		p["host"] = server.host
 		p["port"] = server.port
 
-		switch argParts[0] {
+		switch cmd.Args[0] {
 		case "/?":
 			return p, false
 		case "":

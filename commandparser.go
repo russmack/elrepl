@@ -14,11 +14,12 @@ func NewCommandParser() *CommandParser {
 }
 
 func (p *CommandParser) Parse(entry string) (*Command, error) {
-	parts := strings.SplitN(entry, " ", 2)
+	//parts := strings.SplitN(entry, " ", 2)
+	parts := strings.Split(entry, " ")
 	cmdName := parts[0]
-	cmdArgs := ""
-	if len(parts) > 1 {
-		cmdArgs = parts[1]
+	cmdArgs := parts[1:]
+	if len(cmdArgs) == 0 {
+		cmdArgs = append(cmdArgs, "")
 	}
 	return NewCommand(cmdName, cmdArgs), nil
 }
