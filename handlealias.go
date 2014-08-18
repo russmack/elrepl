@@ -113,12 +113,14 @@ func init() {
 			fromIndexName := p["fromIndex"]
 			toIndexName := p["toIndex"]
 			aliasName := p["alias"]
-			urlString := "post " + p["endpoint"] + " " + "{ \"actions\": [ { \"remove\": { \"alias\": \"" + aliasName + "\", \"index\": \"" + fromIndexName + "\" }}, { \"add\": { \"alias\": \"" + aliasName + "\", \"index\": \"" + toIndexName + "\" } } ] }"
+			urlString := "post " + p["endpoint"]
 			cmdParser := NewCommandParser()
 			newCmd, err := cmdParser.Parse(urlString)
 			if err != nil {
 				return err.Error()
 			}
+			postData := "{ \"actions\": [ { \"remove\": { \"alias\": \"" + aliasName + "\", \"index\": \"" + fromIndexName + "\" }}, { \"add\": { \"alias\": \"" + aliasName + "\", \"index\": \"" + toIndexName + "\" } } ] }"
+			newCmd.Args = append(newCmd.Args, postData)
 			dispatcher := NewDispatcher()
 			res = dispatcher.Dispatch(newCmd)
 		}
