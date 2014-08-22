@@ -9,7 +9,7 @@ func init() {
 	h := NewHandler()
 	h.CommandName = "count"
 	h.CommandPattern = "(count)( )(.*)"
-	h.Usage = "count [/|indexName]"
+	h.Usage = "count [/|indexName] [type]"
 	h.CommandParser = func(cmd *Command) (ParseMap, bool) {
 		p := ParseMap{}
 		p["scheme"] = "http"
@@ -30,6 +30,10 @@ func init() {
 			if len(cmd.Args) == 1 {
 				p["index"] = cmd.Args[0]
 				return p, true
+			} else if len(cmd.Args) == 2 {
+				p["index"] = cmd.Args[0]
+				p["type"] = cmd.Args[1]
+				return p, true
 			} else {
 				return p, false
 			}
@@ -46,6 +50,10 @@ func init() {
 		index, ok := p["index"]
 		if ok {
 			index += "/"
+		}
+		docType, ok := p["type"]
+		if ok {
+			index += docType + "/"
 		}
 		u.Path = index + p["endpoint"]
 		q := u.Query()
