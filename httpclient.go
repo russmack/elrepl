@@ -34,7 +34,7 @@ func getHttpResource(url string) (string, error) {
 			ok = true
 			break
 		} else {
-			errmsg := fmt.Sprintf("Http server returned status code:", resp.StatusCode)
+			errmsg := fmt.Sprintf("Http server returned status code: %d", resp.StatusCode)
 			err = errors.New(errmsg)
 		}
 	}
