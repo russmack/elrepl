@@ -59,7 +59,7 @@ Server port: 9200
 Set index: podcasts
 
 > alias
-Request: http://10.1.1.12:9200/_aliases?pretty=true
+Request: http://localhost:9200/_aliases?pretty=true
 {
   "movies-2014-05-04-2252" : {
     "aliases" : {
