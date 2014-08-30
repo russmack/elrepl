@@ -104,7 +104,7 @@ func postHttpResource(url string, body string) (string, error) {
 			ok = true
 			break
 		} else {
-			errmsg := fmt.Sprintf("Http server returned status code: %s", resp.StatusCode)
+			errmsg := fmt.Sprintf("Http server returned status code: %d", resp.StatusCode)
 			err = errors.New(errmsg)
 		}
 	}
