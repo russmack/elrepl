@@ -5,11 +5,26 @@ import (
 )
 
 type Command struct {
-	Name    string
-	Args    []string
-	Pattern *regexp.Regexp
+	Instruction string
+	Body        string
+	Name        string
+	Pattern     *regexp.Regexp
+	Tokens      []string
+	//Args        []string
 }
 
-func NewCommand(name string, args []string) *Command {
-	return &Command{Name: name, Args: args}
+type Resource struct {
+	Scheme   string
+	Host     string
+	Port     string
+	Index    string
+	Type     string
+	Field    string
+	Endpoint string
+	Alias    string
+	Routing  string
+}
+
+func NewCommand(instr string, body string, name string, tokens []string) *Command {
+	return &Command{Instruction: instr, Body: body, Name: name, Tokens: tokens}
 }

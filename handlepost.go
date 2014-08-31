@@ -28,13 +28,14 @@ func init() {
 		//queryArgs = strings.TrimPrefix(queryArgs, "/")
 		//queryArgs = strings.TrimSpace(queryArgs)
 		//body := arg[bodyIdx:]
-		queryArgs := cmd.Args[0]
-		body := cmd.Args[1]
+		//queryArgs := cmd.Args[0]
+		//body := cmd.Args[1]
+		queryArgs := cmd.Tokens[1]
 
 		url := fmt.Sprintf("http://%s:%s/%s", queryHost, queryPort, queryArgs)
 
 		fmt.Println("Request:", url)
-		res, err := postHttpResource(url, body)
+		res, err := postHttpResource(url, cmd.Body)
 		if err != nil {
 			return err.Error()
 		}

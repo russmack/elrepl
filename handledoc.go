@@ -6,6 +6,9 @@ import (
 	"strings"
 )
 
+type DocCmd struct{}
+
+// TODO: clean up.
 func init() {
 	h := NewHandler()
 	h.CommandName = "doc"
@@ -13,7 +16,7 @@ func init() {
 	h.Usage = "doc (get index docId) | (delete index type docId)"
 	h.HandlerFunc = func(cmd *Command) string {
 		//argParts := strings.SplitN(cmd.Args, " ", 3)
-		argParts := cmd.Args
+		argParts := cmd.Tokens
 
 		arg := "_mget?pretty"
 		urlString := ""

@@ -18,7 +18,6 @@ func init() {
 		if err != nil {
 			return "Unable to parse url: " + err.Error()
 		}
-
 		fmt.Println("Request:", newUrl)
 		res, err := deleteHttpResource(newUrl.String())
 		if err != nil {

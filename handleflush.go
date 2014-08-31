@@ -3,60 +3,66 @@ package main
 import (
 	"fmt"
 	"net/url"
+	"regexp"
+	"strings"
 )
+
+type FlushCmd struct{}
 
 func init() {
 	h := NewHandler()
 	h.CommandName = "flush"
 	h.CommandPattern = "(flush)( )(.*)"
 	h.Usage = "flush [/|indexName]"
-	h.CommandParser = func(cmd *Command) (ParseMap, bool) {
-		p := ParseMap{}
-		p["scheme"] = "http"
-		p["host"] = server.host
-		p["port"] = server.port
-		p["endpoint"] = "_flush"
-
-		switch cmd.Args[0] {
-		case "/?":
-			return p, false
-		case "":
-			if len(cmd.Args) == 1 {
-				return p, true
-			} else {
-				return p, false
-			}
-		default:
-			if len(cmd.Args) == 1 {
-				p["index"] = cmd.Args[0]
-				return p, true
-			} else {
-				return p, false
-			}
+	h.CommandParser = func(cmd *Command) (string, bool) {
+		pattFn := map[*regexp.Regexp]func([]string) (string, bool){
+			// Do flush
+			regexp.MustCompile(`^flush ([a-zA-Z0-9\.\-]+)$`): func(s []string) (string, bool) {
+				d := Resource{
+					Scheme:   "http",
+					Host:     server.host,
+					Port:     server.port,
+					Index:    s[1],
+					Endpoint: "_flush",
+				}
+				c := FlushCmd{}
+				r, ok := c.Do(d)
+				return r, ok
+			},
+			// Flush help
+			regexp.MustCompile(`^flush /\?$`): func(s []string) (string, bool) {
+				return "", false
+			},
 		}
+		r, ok := h.Tokenize(strings.TrimSpace(cmd.Instruction), pattFn)
+		return r, ok
 	}
 	h.HandlerFunc = func(cmd *Command) string {
-		p, ok := h.CommandParser(cmd)
+		r, ok := h.CommandParser(cmd)
 		if !ok {
-			return usageMessage(h.Usage)
+			if r != "" {
+				r += "\n\n"
+			}
+			return r + usageMessage(h.Usage)
 		}
-		u := new(url.URL)
-		u.Scheme = p["scheme"]
-		u.Host = p["host"] + ":" + p["port"]
-		index, ok := p["index"]
-		if ok {
-			index += "/"
-		}
-		u.Path = index + p["endpoint"]
-		q := u.Query()
-		q.Add("pretty", "true")
-		u.RawQuery = q.Encode()
-		fmt.Println("Request:", u)
-		res, err := postHttpResource(u.String(), "")
-		if err != nil {
-			return err.Error()
-		}
-		return res
+		return r
 	}
 	HandlerRegistry[h.CommandName] = h
+}
+
+func (c *FlushCmd) Do(d Resource) (string, bool) {
+	u := new(url.URL)
+	u.Scheme = d.Scheme
+	u.Host = d.Host + ":" + d.Port
+	index := d.Index
+	u.Path = index + d.Endpoint
+	q := u.Query()
+	q.Add("pretty", "true")
+	u.RawQuery = q.Encode()
+	fmt.Println("Request:", u)
+	res, err := postHttpResource(u.String(), "")
+	if err != nil {
+		return err.Error(), false
+	}
+	return res, true
 }

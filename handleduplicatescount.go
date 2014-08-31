@@ -5,120 +5,120 @@ import (
 	"fmt"
 	"github.com/mattbaird/elastigo/api"
 	"github.com/mattbaird/elastigo/core"
+	"regexp"
 	"sort"
+	"strings"
 )
+
+type DuplicatesCountCmd struct{}
 
 func init() {
 	h := NewHandler()
 	h.CommandName = "duplicatescount"
 	h.CommandPattern = "(duplicatescount)(( )(.*))"
-	h.Usage = "duplicatecount [host port] index type field"
-	h.CommandParser = func(cmd *Command) (ParseMap, bool) {
-		p := ParseMap{}
-		switch len(cmd.Args) {
-		case 3:
-			p["host"] = server.host
-			p["port"] = server.port
-			p["index"] = cmd.Args[0]
-			p["type"] = cmd.Args[1]
-			p["field"] = cmd.Args[2]
-		case 5:
-			p["host"] = cmd.Args[0]
-			p["port"] = cmd.Args[1]
-			p["index"] = cmd.Args[2]
-			p["type"] = cmd.Args[3]
-			p["field"] = cmd.Args[4]
-		default:
-			//case "/?"
-			//case ""
-			return p, false
+	h.Usage = "duplicatescount [host port] index type field"
+	h.CommandParser = func(cmd *Command) (string, bool) {
+		pattFn := map[*regexp.Regexp]func([]string) (string, bool){
+			// Duplicatescount help
+			regexp.MustCompile(`^duplicatescount /\?$`): func(s []string) (string, bool) {
+				return "", false
+			},
+			// Count duplicates
+			regexp.MustCompile(`^alias create ([a-zA-Z0-9\.\-]+) ([0-9]{1,5}) ([a-zA-Z0-9\.\-]+) ([a-zA-Z0-9\.\-]+) ([a-zA-Z0-9\.\-]+)$`): func(s []string) (string, bool) {
+				d := Resource{
+					Host:  s[1],
+					Port:  s[2],
+					Index: s[3],
+					Type:  s[4],
+					Field: s[5],
+				}
+				c := DuplicatesCountCmd{}
+				r, ok := c.Do(d)
+				return r, ok
+			},
 		}
-		return p, true
+		r, ok := h.Tokenize(strings.TrimSpace(cmd.Instruction), pattFn)
+		return r, ok
 	}
 	h.HandlerFunc = func(cmd *Command) string {
 		fmt.Println("Finding duplicates...")
-		p, ok := h.CommandParser(cmd)
+		r, ok := h.CommandParser(cmd)
 		if !ok {
-			return usageMessage(h.Usage)
-		}
-		srcHost := p["host"]
-		srcPort := p["port"]
-		srcIndex := p["index"]
-		srcType := p["tyep"]
-		srcField := p["field"]
-
-		api.Domain = srcHost
-		api.Port = srcPort
-
-		fmt.Println("Scanning...")
-		scanArgs := map[string]interface{}{"search_type": "scan", "scroll": "1m", "size": "1000"}
-		scanResult, err := core.SearchUri(srcIndex, srcType, scanArgs)
-		if err != nil {
-			fmt.Println("Failed getting scan result for index:", srcIndex, "; err:", err)
-			return err.Error()
-		}
-
-		//total := scanResult.Hits.Total
-
-		scrollId := scanResult.ScrollId
-		counter := 0
-		failures := 0
-
-		fmt.Println("Scrolling...")
-		scrollArgs := map[string]interface{}{"scroll": "1m"}
-		scrollResult, err := core.Scroll(scrollArgs, scrollId)
-		if err != nil {
-			fmt.Println("Failed getting scroll result for index:", srcIndex, "; err:", err)
-			return err.Error()
-		}
-
-		fmt.Println("Counting...")
-		counts := make(map[string]*Duplicate)
-		var f interface{}
-		for len(scrollResult.Hits.Hits) > 0 {
-			fmt.Println("Scroll result hits:", len(scrollResult.Hits.Hits))
-			for _, j := range scrollResult.Hits.Hits {
-				docId := j.Id
-				err := json.Unmarshal(*j.Source, &f)
-				if err != nil {
-					fmt.Println("ERR:", err)
-				}
-				m := f.(map[string]interface{})
-				for k, v := range m {
-					switch vv := v.(type) {
-					case string:
-						if k == srcField {
-							_, ok := counts[vv]
-							if ok {
-								counts[vv].Count++
-								counts[vv].IdList = append(counts[vv].IdList, docId)
-							} else {
-								counts[vv] = &Duplicate{}
-								counts[vv].Count = 1
-								counts[vv].Value = vv
-								counts[vv].IdList = []string{docId}
-							}
-						}
-					default:
-						//nothing
-					}
-				}
-				counter++
+			if r != "" {
+				r += "\n\n"
 			}
-
-			// ScrollId changes with every request.
-			scrollId = scrollResult.ScrollId
-			scrollArgs := map[string]interface{}{"scroll": "1m"}
-			scrollResult, err = core.Scroll(scrollArgs, scrollId)
-			if err != nil {
-				fmt.Println("Failed getting scroll result for index:", srcIndex, "; err:", err)
-				return err.Error()
-			}
+			return r + usageMessage(h.Usage)
 		}
-		dispPairList(counts)
-		return fmt.Sprintf("Total processed: %d.  %d failed.", counter, failures)
+		return r
 	}
 	HandlerRegistry[h.CommandName] = h
+}
+
+func (c *DuplicatesCountCmd) Do(d Resource) (string, bool) {
+	api.Domain = d.Host
+	api.Port = d.Port
+	fmt.Println("Scanning...")
+	scanArgs := map[string]interface{}{"search_type": "scan", "scroll": "1m", "size": "1000"}
+	scanResult, err := core.SearchUri(d.Index, d.Type, scanArgs)
+	if err != nil {
+		fmt.Println("Failed getting scan result for index:", d.Index, "; err:", err)
+		return err.Error(), false
+	}
+	//total := scanResult.Hits.Total
+	scrollId := scanResult.ScrollId
+	counter := 0
+	failures := 0
+	fmt.Println("Scrolling...")
+	scrollArgs := map[string]interface{}{"scroll": "1m"}
+	scrollResult, err := core.Scroll(scrollArgs, scrollId)
+	if err != nil {
+		fmt.Println("Failed getting scroll result for index:", d.Index, "; err:", err)
+		return err.Error(), false
+	}
+	fmt.Println("Counting...")
+	counts := make(map[string]*Duplicate)
+	var f interface{}
+	for len(scrollResult.Hits.Hits) > 0 {
+		fmt.Println("Scroll result hits:", len(scrollResult.Hits.Hits))
+		for _, j := range scrollResult.Hits.Hits {
+			docId := j.Id
+			err := json.Unmarshal(*j.Source, &f)
+			if err != nil {
+				fmt.Println("ERR:", err)
+			}
+			m := f.(map[string]interface{})
+			for k, v := range m {
+				switch vv := v.(type) {
+				case string:
+					if k == d.Field {
+						_, ok := counts[vv]
+						if ok {
+							counts[vv].Count++
+							counts[vv].IdList = append(counts[vv].IdList, docId)
+						} else {
+							counts[vv] = &Duplicate{}
+							counts[vv].Count = 1
+							counts[vv].Value = vv
+							counts[vv].IdList = []string{docId}
+						}
+					}
+				default:
+					//nothing
+				}
+			}
+			counter++
+		}
+		// ScrollId changes with every request.
+		scrollId = scrollResult.ScrollId
+		scrollArgs := map[string]interface{}{"scroll": "1m"}
+		scrollResult, err = core.Scroll(scrollArgs, scrollId)
+		if err != nil {
+			fmt.Println("Failed getting scroll result for index:", d.Index, "; err:", err)
+			return err.Error(), false
+		}
+	}
+	dispPairList(counts)
+	return fmt.Sprintf("Total processed: %d.  %d failed.", counter, failures), true
 }
 
 type Duplicate struct {

@@ -4,107 +4,118 @@ import (
 	"fmt"
 	"github.com/mattbaird/elastigo/api"
 	"github.com/mattbaird/elastigo/core"
+	"regexp"
+	"strings"
 )
+
+type ReindexCmd struct{}
 
 // reindex localhost:9200/srcindex/type localhost:9200/targetindex/routing
 func init() {
 	h := NewHandler()
 	h.CommandName = "reindex"
 	h.CommandPattern = "(reindex)( )(.*)"
-	h.Usage = "reindex sourceHost port sourceIndex sourceType targetHost port targetIndex [routing]"
-	h.CommandParser = func(cmd *Command) (ParseMap, bool) {
-		p := ParseMap{}
-		argsCount := len(cmd.Args)
-		if argsCount == 7 || argsCount == 8 {
-			p["srcHost"] = cmd.Args[0]
-			p["srcPort"] = cmd.Args[1]
-			p["srcIndex"] = cmd.Args[2]
-			p["srcType"] = cmd.Args[3]
-			p["tgtHost"] = cmd.Args[4]
-			p["tgtPort"] = cmd.Args[5]
-			p["tgtIndex"] = cmd.Args[6]
-			if argsCount == 8 {
-				p["tgtRouting"] = cmd.Args[7]
-			}
-		} else {
-			//case "/?"
-			//case ""
-			return p, false
+	h.Usage = "reindex sourceHost sourcePort sourceIndex sourceType targetHost targetPort targetIndex [routing]"
+	h.CommandParser = func(cmd *Command) (string, bool) {
+		pattFn := map[*regexp.Regexp]func([]string) (string, bool){
+			// Index help
+			regexp.MustCompile(`^reindex /\?$`): func(s []string) (string, bool) {
+				return "", false
+			},
+			// Reindex
+			regexp.MustCompile(`^reindex ([a-zA-Z0-9\.\-]+) ([0-9]{1,5}) ([a-zA-Z0-9\.\-]+) ([a-zA-Z0-9\.\-]+) ([a-zA-Z0-9\.\-]+) ([0-9]{1,5}) ([a-zA-Z0-9\.\-]+) ([a-zA-Z0-9\.\-]+)?$`): func(s []string) (string, bool) {
+				dSource := Resource{
+					Scheme: "http",
+					Host:   s[1],
+					Port:   s[2],
+					Index:  s[3],
+					Type:   s[4],
+				}
+				dTarget := Resource{
+					Scheme:  "http",
+					Host:    s[5],
+					Port:    s[6],
+					Index:   s[7],
+					Routing: s[8],
+				}
+				c := ReindexCmd{}
+				r, ok := c.Reindex(dSource, dTarget)
+				return r, ok
+			},
 		}
-		return p, true
+		r, ok := h.Tokenize(strings.TrimSpace(cmd.Instruction), pattFn)
+		return r, ok
 	}
 	h.HandlerFunc = func(cmd *Command) string {
 		fmt.Println("Reindexing...")
-		p, ok := h.CommandParser(cmd)
+		r, ok := h.CommandParser(cmd)
 		if !ok {
-			return usageMessage(h.Usage)
-		}
-		srcHost := p["srcHost"]
-		srcPort := p["srcPort"]
-		srcIndex := p["srcIndex"]
-		srcType := p["srcType"]
-		tgtHost := p["tgtHost"]
-		tgtPort := p["tgtPort"]
-		tgtIndex := p["tgtIndex"]
-		tgtRouting := p["tgtRouting"]
-
-		api.Domain = srcHost
-		api.Port = srcPort
-
-		fmt.Println("Scanning...")
-		scanArgs := map[string]interface{}{"search_type": "scan", "scroll": "1m", "size": "1000"}
-		scanResult, err := core.SearchUri(srcIndex, srcType, scanArgs)
-		if err != nil {
-			fmt.Println("Failed getting scan result for index:", srcIndex, "; err:", err)
-			return err.Error()
-		}
-
-		//total := scanResult.Hits.Total
-
-		scrollId := scanResult.ScrollId
-		counter := 0
-		failures := 0
-
-		fmt.Println("Scrolling...")
-		scrollArgs := map[string]interface{}{"scroll": "1m"}
-		scrollResult, err := core.Scroll(scrollArgs, scrollId)
-		if err != nil {
-			fmt.Println("Failed getting scroll result for index:", srcIndex, "; err:", err)
-			return err.Error()
-		}
-
-		fmt.Println("Indexing...")
-		var indexArgs map[string]interface{} = nil
-		if tgtRouting != "" {
-			indexArgs = map[string]interface{}{"routing": tgtRouting}
-		}
-		for len(scrollResult.Hits.Hits) > 0 {
-			fmt.Println("Scroll result hits:", len(scrollResult.Hits.Hits))
-			for _, j := range scrollResult.Hits.Hits {
-				api.Domain = tgtHost
-				api.Port = tgtPort
-
-				_, err := core.Index(tgtIndex, srcType, j.Id, indexArgs, j.Source)
-				if err != nil {
-					fmt.Println("Failed inserting document, id:", j.Id, "; ", err)
-					failures++
-					continue
-				}
-				counter++
+			if r != "" {
+				r += "\n\n"
 			}
-
-			api.Domain = srcHost
-			api.Port = srcPort
-			// ScrollId changes with every request.
-			scrollId = scrollResult.ScrollId
-			scrollArgs := map[string]interface{}{"scroll": "1m"}
-			scrollResult, err = core.Scroll(scrollArgs, scrollId)
-			if err != nil {
-				fmt.Println("Failed getting scroll result for index:", srcIndex, "; err:", err)
-				return err.Error()
-			}
+			return r + usageMessage(h.Usage)
 		}
-		return fmt.Sprintf("Total processed: %d.  %d failed.", counter, failures)
+		return r
 	}
 	HandlerRegistry[h.CommandName] = h
+}
+
+func (c *ReindexCmd) Reindex(dSource Resource, dTarget Resource) (string, bool) {
+	api.Domain = dSource.Host
+	api.Port = dSource.Port
+
+	fmt.Println("Scanning...")
+	scanArgs := map[string]interface{}{"search_type": "scan", "scroll": "1m", "size": "1000"}
+	scanResult, err := core.SearchUri(dSource.Index, dSource.Type, scanArgs)
+	if err != nil {
+		fmt.Println("Failed getting scan result for index:", dSource.Index, "; err:", err)
+		return err.Error(), false
+	}
+
+	//total := scanResult.Hits.Total
+
+	scrollId := scanResult.ScrollId
+	counter := 0
+	failures := 0
+
+	fmt.Println("Scrolling...")
+	scrollArgs := map[string]interface{}{"scroll": "1m"}
+	scrollResult, err := core.Scroll(scrollArgs, scrollId)
+	if err != nil {
+		fmt.Println("Failed getting scroll result for index:", dSource.Index, "; err:", err)
+		return err.Error(), false
+	}
+
+	fmt.Println("Indexing...")
+	var indexArgs map[string]interface{} = nil
+	if dTarget.Routing != "" {
+		indexArgs = map[string]interface{}{"routing": dTarget.Routing}
+	}
+	for len(scrollResult.Hits.Hits) > 0 {
+		fmt.Println("Scroll result hits:", len(scrollResult.Hits.Hits))
+		for _, j := range scrollResult.Hits.Hits {
+			api.Domain = dTarget.Host
+			api.Port = dTarget.Port
+
+			_, err := core.Index(dTarget.Index, dSource.Type, j.Id, indexArgs, j.Source)
+			if err != nil {
+				fmt.Println("Failed inserting document, id:", j.Id, "; ", err)
+				failures++
+				continue
+			}
+			counter++
+		}
+
+		api.Domain = dSource.Host
+		api.Port = dSource.Port
+		// ScrollId changes with every request.
+		scrollId = scrollResult.ScrollId
+		scrollArgs := map[string]interface{}{"scroll": "1m"}
+		scrollResult, err = core.Scroll(scrollArgs, scrollId)
+		if err != nil {
+			fmt.Println("Failed getting scroll result for index:", dSource.Index, "; err:", err)
+			return err.Error(), false
+		}
+	}
+	return fmt.Sprintf("Total processed: %d.  %d failed.", counter, failures), true
 }
