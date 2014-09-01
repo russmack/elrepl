@@ -17,7 +17,7 @@ func init() {
 		queryPort := cmd.Tokens[2]
 		queryArgs := cmd.Tokens[3]
 		url := fmt.Sprintf("http://%s:%s/%s", queryHost, queryPort, queryArgs)
-		fmt.Println("Request:", url)
+		fmt.Println("Request: post", url)
 		res, err := postHttpResource(url, cmd.Body)
 		if err != nil {
 			return err.Error()

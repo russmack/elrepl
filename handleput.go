@@ -14,9 +14,12 @@ func init() {
 	h.CommandPattern = "(put)( )(.*)"
 	h.Usage = `put movie/1 { "title": "Alien", "director": "Ridley Scott", "year": 1979, "genres": ["Science fiction"] }`
 	h.HandlerFunc = func(cmd *Command) string {
-		queryArgs := cmd.Tokens[2]
-		url := fmt.Sprintf("http://%s:%s/%s/%s", server.host, server.port, server.index, queryArgs)
-		fmt.Println("Request:", url)
+		queryHost := cmd.Tokens[1]
+		queryPort := cmd.Tokens[2]
+		queryArgs := cmd.Tokens[3]
+		url := fmt.Sprintf("http://%s:%s/%s", queryHost, queryPort, queryArgs)
+		//url := fmt.Sprintf("http://%s:%s/%s/%s", queryHost, queryPort, server.index, queryArgs)
+		fmt.Println("Request: put", url)
 		res, err := putHttpResource(url, cmd.Body)
 		if err != nil {
 			return err.Error()
