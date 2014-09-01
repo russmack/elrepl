@@ -13,16 +13,17 @@ func init() {
 	h := NewHandler()
 	h.CommandName = "settings"
 	h.CommandPattern = "(settings)( )(.*)"
-	h.Usage = "settings [/|indexName]"
+	h.Usage = "settings indexName"
 	h.CommandParser = func(cmd *Command) (string, bool) {
 		pattFn := map[*regexp.Regexp]func([]string) (string, bool){
 			// Get settings
 			regexp.MustCompile(`^settings ([a-zA-Z0-9\.\-]+)$`): func(s []string) (string, bool) {
 				d := Resource{
-					Scheme: "http",
-					Host:   server.host,
-					Port:   server.port,
-					Index:  s[1],
+					Scheme:   "http",
+					Host:     server.host,
+					Port:     server.port,
+					Index:    s[1],
+					Endpoint: "_settings",
 				}
 				c := SettingsCmd{}
 				r, ok := c.Get(d)
@@ -54,7 +55,7 @@ func (c *SettingsCmd) Get(d Resource) (string, bool) {
 	u.Scheme = d.Scheme
 	u.Host = d.Host + ":" + d.Port
 	index := d.Index
-	u.Path = index + d.Endpoint
+	u.Path = index + "/" + d.Endpoint
 	q := u.Query()
 	q.Add("pretty", "true")
 	u.RawQuery = q.Encode()
