@@ -14,7 +14,11 @@ func init() {
 	h := NewHandler()
 	h.CommandName = "alias"
 	h.CommandPattern = "(alias)( )(.*)"
-	h.Usage = "alias (create host port indexName aliasName) | (remove host port indexName aliasName) | (move host port fromIndex toIndex aliasName)"
+	h.Usage = "alias\n" +
+		"alias host port\n" +
+		"alias create host port indexName aliasName\n" +
+		"alias remove host port indexName aliasName\n" +
+		"alias move host port fromIndex toIndex aliasName"
 	h.CommandParser = func(cmd *Command) (string, bool) {
 		pattFn := map[*regexp.Regexp]func([]string) (string, bool){
 			// List all aliases on host
@@ -29,6 +33,17 @@ func init() {
 				r, ok := c.GetAll(d)
 				return r, ok
 			},
+			regexp.MustCompile(`^alias ([a-zA-Z0-9\.\-]+) ([0-9]{1,5})$`): func(s []string) (string, bool) {
+				d := Resource{
+					Endpoint: "_aliases",
+					Scheme:   "http",
+					Host:     s[1],
+					Port:     s[2],
+				}
+				c := AliasCmd{}
+				r, ok := c.GetAll(d)
+				return r, ok
+			},
 			// Alias help
 			regexp.MustCompile(`^alias /\?$`): func(s []string) (string, bool) {
 				return "", false
@@ -37,6 +52,8 @@ func init() {
 			regexp.MustCompile(`^alias create ([a-zA-Z0-9\.\-]+) ([0-9]{1,5}) ([a-zA-Z0-9\.\-]+) ([a-zA-Z0-9\.\-]+)$`): func(s []string) (string, bool) {
 				d := Resource{
 					Endpoint: "_aliases",
+					Host:     s[1],
+					Port:     s[2],
 					Index:    s[3],
 					Alias:    s[4],
 				}
@@ -48,6 +65,8 @@ func init() {
 			regexp.MustCompile(`^alias remove ([a-zA-Z0-9\.\-]+) ([0-9]{1,5}) ([a-zA-Z0-9\.\-]+) ([a-zA-Z0-9\.\-]+)$`): func(s []string) (string, bool) {
 				d := Resource{
 					Endpoint: "_aliases",
+					Host:     s[1],
+					Port:     s[2],
 					Index:    s[3],
 					Alias:    s[4],
 				}
@@ -59,6 +78,8 @@ func init() {
 			regexp.MustCompile(`^alias move ([a-zA-Z0-9\.\-]+) ([0-9]{1,5}) ([a-zA-Z0-9\.\-]+) ([a-zA-Z0-9\.\-]+) ([a-zA-Z0-9\.\-]+)$`): func(s []string) (string, bool) {
 				dFrom := Resource{
 					Endpoint: "_aliases",
+					Host:     s[1],
+					Port:     s[2],
 					Index:    s[3],
 					Alias:    s[5],
 				}
@@ -88,8 +109,8 @@ func init() {
 }
 
 func (c *AliasCmd) GetAll(d Resource) (string, bool) {
-	if server.host == "" || server.port == "" {
-		return "Missing host or port environment config.", false
+	if d.Host == "" || d.Port == "" {
+		return "Missing host or port.", false
 	}
 	u := new(url.URL)
 	u.Scheme = d.Scheme
@@ -108,12 +129,11 @@ func (c *AliasCmd) GetAll(d Resource) (string, bool) {
 }
 
 func (c *AliasCmd) Create(d Resource) (string, bool) {
-	if server.host == "" || server.port == "" {
-		return "Missing host or port environment config.", false
+	if d.Host == "" || d.Port == "" {
+		return "Missing host or port.", false
 	}
-	//curl -XPOST "http://10.1.1.12:9200/_aliases" -d '{ "actions": [ { "add": { "index": "podcasts-2014-07-29-001", "alias": "podcastsupdater" } } ] }'
-	//post _alias?pretty { "actions": [ { "add": { "index": "podcasts-2014-07-29-001", "alias": "podcastsupdater" } } ] }
-	urlString := "post " + d.Endpoint + " " + "{\"actions\": [ { \"add\": { \"index\": \"" + d.Index + "\", \"alias\": \"" + d.Alias + "\" } } ] }"
+	postData := "{\"actions\": [ { \"add\": { \"index\": \"" + d.Index + "\", \"alias\": \"" + d.Alias + "\" } } ] }"
+	urlString := "post " + d.Host + " " + d.Port + " " + d.Endpoint + " " + postData
 	cmdParser := NewCommandParser()
 	newCmd, err := cmdParser.Parse(urlString)
 	if err != nil {
@@ -125,12 +145,11 @@ func (c *AliasCmd) Create(d Resource) (string, bool) {
 }
 
 func (c *AliasCmd) Remove(d Resource) (string, bool) {
-	if server.host == "" || server.port == "" {
-		return "Missing host or port environment config.", false
+	if d.Host == "" || d.Port == "" {
+		return "Missing host or port.", false
 	}
-	//curl -XPOST "http://10.1.1.12:9200/_aliases" -d '{ "actions": [ { "remove": { "index": "podcasts-2014-05-07-0103", "alias": "podcastsupdater" } } ] }'
-	//post _alias?pretty { "actions": [ { "remove": { "index": "podcasts-2014-05-07-0103", "alias": "podcastsupdater" } } ] }
-	urlString := "post " + d.Endpoint + " " + "{\"actions\": [ { \"remove\": { \"index\": \"" + d.Index + "\", \"alias\": \"" + d.Alias + "\" } } ] }"
+	postData := "{\"actions\": [ { \"remove\": { \"index\": \"" + d.Index + "\", \"alias\": \"" + d.Alias + "\" } } ] }"
+	urlString := "post " + d.Host + " " + d.Port + " " + d.Endpoint + " " + postData
 	cmdParser := NewCommandParser()
 	newCmd, err := cmdParser.Parse(urlString)
 	if err != nil {
@@ -142,11 +161,11 @@ func (c *AliasCmd) Remove(d Resource) (string, bool) {
 }
 
 func (c *AliasCmd) Move(dFrom Resource, dTarget Resource) (string, bool) {
-	if server.host == "" || server.port == "" {
-		return "Missing host or port environment config.", false
+	if dFrom.Host == "" || dFrom.Port == "" {
+		return "Missing host or port.", false
 	}
 	postData := "{ \"actions\": [ { \"remove\": { \"alias\": \"" + dFrom.Alias + "\", \"index\": \"" + dFrom.Index + "\" }}, { \"add\": { \"alias\": \"" + dTarget.Alias + "\", \"index\": \"" + dTarget.Index + "\" } } ] }"
-	urlString := "post " + dFrom.Endpoint + " " + postData
+	urlString := "post " + dFrom.Host + " " + dFrom.Port + " " + dFrom.Endpoint + " " + postData
 	cmdParser := NewCommandParser()
 	newCmd, err := cmdParser.Parse(urlString)
 	if err != nil {
