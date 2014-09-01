@@ -13,16 +13,15 @@ func init() {
 	h := NewHandler()
 	h.CommandName = "version"
 	h.CommandPattern = "(version)(( )(.*))"
-	h.Usage = "version"
+	h.Usage = "version host port"
 	h.CommandParser = func(cmd *Command) (string, bool) {
 		pattFn := map[*regexp.Regexp]func([]string) (string, bool){
 			// Get version
-			regexp.MustCompile(`^version$`): func(s []string) (string, bool) {
+			regexp.MustCompile(`^version ([a-zA-Z0-9\.\-]+) ([0-9]{1,5})$`): func(s []string) (string, bool) {
 				d := Resource{
 					Scheme: "http",
-					Host:   server.host,
-					Port:   server.port,
-					Index:  server.index,
+					Host:   s[1],
+					Port:   s[2],
 				}
 				c := VersionCmd{}
 				r, ok := c.Get(d)
