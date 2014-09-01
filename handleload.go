@@ -10,6 +10,9 @@ func init() {
 	h.CommandPattern = "(load)( )(.*)"
 	h.Usage = "load filename"
 	h.HandlerFunc = func(cmd *Command) string {
+		if len(cmd.Tokens) != 2 {
+			return usageMessage(h.Usage)
+		}
 		filename := cmd.Tokens[1]
 		file, err := ioutil.ReadFile(filename)
 		if err != nil {
