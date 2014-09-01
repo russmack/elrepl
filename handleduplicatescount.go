@@ -16,7 +16,7 @@ func init() {
 	h := NewHandler()
 	h.CommandName = "duplicatescount"
 	h.CommandPattern = "(duplicatescount)(( )(.*))"
-	h.Usage = "duplicatescount [host port] index type field"
+	h.Usage = "duplicatescount host port index type field"
 	h.CommandParser = func(cmd *Command) (string, bool) {
 		pattFn := map[*regexp.Regexp]func([]string) (string, bool){
 			// Duplicatescount help
@@ -24,7 +24,7 @@ func init() {
 				return "", false
 			},
 			// Count duplicates
-			regexp.MustCompile(`^alias create ([a-zA-Z0-9\.\-]+) ([0-9]{1,5}) ([a-zA-Z0-9\.\-]+) ([a-zA-Z0-9\.\-]+) ([a-zA-Z0-9\.\-]+)$`): func(s []string) (string, bool) {
+			regexp.MustCompile(`^duplicatescount ([a-zA-Z0-9\.\-]+) ([0-9]{1,5}) ([a-zA-Z0-9\.\-]+) ([a-zA-Z0-9\.\-]+) ([a-zA-Z0-9\.\-]+)$`): func(s []string) (string, bool) {
 				d := Resource{
 					Host:  s[1],
 					Port:  s[2],
@@ -117,7 +117,7 @@ func (c *DuplicatesCountCmd) Do(d Resource) (string, bool) {
 			return err.Error(), false
 		}
 	}
-	dispPairList(counts)
+	showPairList(counts)
 	return fmt.Sprintf("Total processed: %d.  %d failed.", counter, failures), true
 }
 
@@ -127,13 +127,13 @@ type Duplicate struct {
 	Count  int
 }
 
-func dispMap(counts map[string]int) {
+func showMap(counts map[string]int) {
 	for k, v := range counts {
 		fmt.Print(k, ":", v, "|")
 	}
 }
 
-func dispPairList(counts map[string]*Duplicate) {
+func showPairList(counts map[string]*Duplicate) {
 	pairlist := sortMapByValue(counts)
 	tot := len(pairlist)
 	fmt.Println("total:", tot)
@@ -143,7 +143,12 @@ func dispPairList(counts map[string]*Duplicate) {
 			duplicated++
 		}
 	}
-	for i := tot - 1; i > tot-30; i-- {
+	displayMax := 30
+	if tot < displayMax {
+		displayMax = tot
+	}
+	fmt.Println("Displaying max:", displayMax)
+	for i := tot - 1; i >= tot-displayMax; i-- {
 		if pairlist[i].Duplicate.Count > 1 {
 			fmt.Println(pairlist[i].Duplicate.Count, " : ", pairlist[i].Key, " : ", pairlist[i].Duplicate.IdList)
 		}
