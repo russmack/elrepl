@@ -4,8 +4,6 @@ elRepl
 An elasticsearch repl written in Golang.
 
 
-This project is in the earliest stage of development.
-
 ```
 Commands:
 alias
@@ -52,7 +50,7 @@ Index set: MyIndex
 
 > env
 
-        elRepl version 0.1
+        elRepl version 0.2
 
         Host: localhost
         Port: 9200
