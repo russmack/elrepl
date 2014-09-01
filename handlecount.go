@@ -13,17 +13,31 @@ func init() {
 	h := NewHandler()
 	h.CommandName = "count"
 	h.CommandPattern = "(count)( )(.*)"
-	h.Usage = "count [/|indexName] [type]"
+	h.Usage = "count [host port] indexName [type]"
 	h.CommandParser = func(cmd *Command) (string, bool) {
 		pattFn := map[*regexp.Regexp]func([]string) (string, bool){
-			// Get count
-			regexp.MustCompile(`^count ([a-zA-Z0-9\.\-]+) ([a-zA-Z0-9\.\-]+)$`): func(s []string) (string, bool) {
+			// Get count: require: index; optional: type
+			regexp.MustCompile(`^count ([a-zA-Z0-9\.\-]+)(( )([a-zA-Z0-9\.\-]+))?$`): func(s []string) (string, bool) {
 				d := Resource{
 					Scheme:   "http",
 					Host:     server.host,
 					Port:     server.port,
 					Index:    s[1],
-					Type:     s[2],
+					Type:     s[4],
+					Endpoint: "_count",
+				}
+				c := CountCmd{}
+				r, ok := c.Get(d)
+				return r, ok
+			},
+			// Get count: require: host, port, index; optional: type
+			regexp.MustCompile(`^count ([a-zA-Z0-9\.\-]+) ([0-9]{1,5}) ([a-zA-Z0-9\.\-]+)(( )([a-zA-Z0-9\.\-]+))?$`): func(s []string) (string, bool) {
+				d := Resource{
+					Scheme:   "http",
+					Host:     s[1],
+					Port:     s[2],
+					Index:    s[3],
+					Type:     s[6],
 					Endpoint: "_count",
 				}
 				c := CountCmd{}
@@ -52,10 +66,13 @@ func init() {
 }
 
 func (c *CountCmd) Get(d Resource) (string, bool) {
+	if d.Host == "" || d.Port == "" {
+		return "Missing host or port.", false
+	}
 	u := new(url.URL)
 	u.Scheme = d.Scheme
 	u.Host = d.Host + ":" + d.Port
-	index := d.Index
+	index := d.Index + "/"
 	docType := d.Type
 	if docType != "" {
 		index += docType + "/"
