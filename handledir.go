@@ -10,11 +10,13 @@ func init() {
 	h.CommandPattern = "(dir)( )(.*)"
 	h.Usage = "dir"
 	h.HandlerFunc = func(cmd *Command) string {
-		arg := cmd.Tokens[1]
-		if arg == "" {
-			arg = "."
+		dir := ""
+		if len(cmd.Tokens) == 1 {
+			dir = "."
+		} else {
+			dir = cmd.Tokens[1]
 		}
-		dirFiles, err := ioutil.ReadDir(arg)
+		dirFiles, err := ioutil.ReadDir(dir)
 		if err != nil {
 			return err.Error()
 		}
