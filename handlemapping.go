@@ -13,16 +13,17 @@ func init() {
 	h := NewHandler()
 	h.CommandName = "mapping"
 	h.CommandPattern = "(mapping)( )(.*)"
-	h.Usage = "mapping [/|indexName]"
+	h.Usage = "mapping indexName"
 	h.CommandParser = func(cmd *Command) (string, bool) {
 		pattFn := map[*regexp.Regexp]func([]string) (string, bool){
 			// Get mapping
 			regexp.MustCompile(`^mapping ([a-zA-Z0-9\.\-]+)$`): func(s []string) (string, bool) {
 				d := Resource{
-					Scheme: "http",
-					Host:   server.host,
-					Port:   server.port,
-					Index:  s[1],
+					Scheme:   "http",
+					Host:     server.host,
+					Port:     server.port,
+					Index:    s[1],
+					Endpoint: "_mapping",
 				}
 				c := MappingCmd{}
 				r, ok := c.Get(d)
@@ -53,7 +54,7 @@ func (c *MappingCmd) Get(d Resource) (string, bool) {
 	u := new(url.URL)
 	u.Scheme = d.Scheme
 	u.Host = d.Host + ":" + d.Port
-	index := d.Index
+	index := d.Index + "/"
 	u.Path = index + d.Endpoint
 	q := u.Query()
 	q.Add("pretty", "true")
