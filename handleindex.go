@@ -14,26 +14,15 @@ func init() {
 	h := NewHandler()
 	h.CommandName = "index"
 	h.CommandPattern = "(index)(( )(.*))"
-	h.Usage = "index [ indexName | (create host port indexName) ]"
+	h.Usage = "index ( (create host port indexName) | (delete host port indexName) )"
 	h.CommandParser = func(cmd *Command) (string, bool) {
 		pattFn := map[*regexp.Regexp]func([]string) (string, bool){
-			// Get index
-			regexp.MustCompile(`^index$`): func(s []string) (string, bool) {
-				r := "Index: " + server.index
-				return r, true
-			},
 			// Index help
 			regexp.MustCompile(`^index /\?$`): func(s []string) (string, bool) {
 				return "", false
 			},
-			// Set index
-			regexp.MustCompile(`^index ([a-zA-Z0-9\.]+)$`): func(s []string) (string, bool) {
-				server.index = s[1]
-				r := "Set index: " + server.index
-				return r, true
-			},
 			// Create index
-			//curl -XPUT "http://10.1.1.12:9200/podcasts-2014-07-23-1930/"
+			//curl -XPUT "http://localhost:9200/indexname/"
 			regexp.MustCompile(`^index create ([a-zA-Z0-9\.\-]+) ([0-9]{1,5}) ([a-zA-Z0-9\.\-]+)$`): func(s []string) (string, bool) {
 				d := Resource{
 					Scheme: "http",
@@ -75,7 +64,7 @@ func init() {
 }
 
 func (c *IndexCmd) Create(d Resource) (string, bool) {
-	//curl -XPUT "http://10.1.1.12:9200/podcasts-2014-07-23-1930/"
+	//curl -XPUT "http://localhost:9200/indexname/"
 	u := new(url.URL)
 	u.Scheme = d.Scheme
 	u.Host = d.Host + ":" + d.Port
@@ -93,7 +82,7 @@ func (c *IndexCmd) Create(d Resource) (string, bool) {
 }
 
 func (c *IndexCmd) Delete(d Resource) (string, bool) {
-	//curl -XDELETE "http://10.1.1.12:9200/podcasts-2014-07-23-1930/"
+	//curl -XDELETE "http://localhost:9200/indexname/"
 	u := new(url.URL)
 	u.Scheme = d.Scheme
 	u.Host = d.Host + ":" + d.Port
