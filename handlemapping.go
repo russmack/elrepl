@@ -54,8 +54,8 @@ func (c *MappingCmd) Get(d Resource) (string, bool) {
 	u := new(url.URL)
 	u.Scheme = d.Scheme
 	u.Host = d.Host + ":" + d.Port
-	index := d.Index + "/"
-	u.Path = index + d.Endpoint
+	index := d.Index
+	u.Path = index + "/" + d.Endpoint
 	q := u.Query()
 	q.Add("pretty", "true")
 	u.RawQuery = q.Encode()

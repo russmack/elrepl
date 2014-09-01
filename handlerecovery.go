@@ -13,7 +13,7 @@ func init() {
 	h := NewHandler()
 	h.CommandName = "recovery"
 	h.CommandPattern = "(recovery)( )(.*)"
-	h.Usage = "recovery [/|indexName]"
+	h.Usage = "recovery indexName"
 	h.CommandParser = func(cmd *Command) (string, bool) {
 		pattFn := map[*regexp.Regexp]func([]string) (string, bool){
 			// Do recovery
@@ -55,7 +55,7 @@ func (c *RecoveryCmd) Do(d Resource) (string, bool) {
 	u.Scheme = d.Scheme
 	u.Host = d.Host + ":" + d.Port
 	index := d.Index
-	u.Path = index + d.Endpoint
+	u.Path = index + "/" + d.Endpoint
 	q := u.Query()
 	q.Add("pretty", "true")
 	u.RawQuery = q.Encode()

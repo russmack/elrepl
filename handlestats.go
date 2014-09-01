@@ -12,9 +12,8 @@ type StatsCmd struct{}
 func init() {
 	h := NewHandler()
 	h.CommandName = "stats"
-	//h.CommandPattern = "(stats)( )(.*)"
 	h.CommandPattern = "(stats)( )(.*)"
-	h.Usage = "stats [/|indexName]"
+	h.Usage = "stats indexName"
 	h.CommandParser = func(cmd *Command) (string, bool) {
 		pattFn := map[*regexp.Regexp]func([]string) (string, bool){
 			// Get stats
@@ -56,7 +55,7 @@ func (c *StatsCmd) Get(d Resource) (string, bool) {
 	u.Scheme = d.Scheme
 	u.Host = d.Host + ":" + d.Port
 	index := d.Index
-	u.Path = index + d.Endpoint
+	u.Path = index + "/" + d.Endpoint
 	q := u.Query()
 	q.Add("pretty", "true")
 	u.RawQuery = q.Encode()

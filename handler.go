@@ -1,8 +1,6 @@
 package main
 
 import (
-	//"errors"
-	//"fmt"
 	"regexp"
 )
 
@@ -27,6 +25,5 @@ func (h *Handler) Tokenize(commandEntry string, patternFnMap map[*regexp.Regexp]
 		}
 	}
 	// Invalid command
-	//return errors.New("No pattern matches command.")
 	return "", false
 }
