@@ -18,14 +18,12 @@ exit
 flush
 get
 help
-host
 index
 load
 log
 mapping
 open
 optimize
-port
 post
 put
 recovery
@@ -43,20 +41,22 @@ duplicatescount
 ```
 Example usage:
 
-> host localhost
-Set server host: localhost
+> env host localhost
+Host set: localhost
 
-> host
-Server host: localhost
+> env port 9200
+Port set: 9200
 
-> port 9200
-Set server port: 9200
+> env index MyIndex
+Index set: MyIndex
 
-> port
-Server port: 9200
+> env
 
-> index podcasts
-Set index: podcasts
+        elRepl version 0.1
+
+        Host: localhost
+        Port: 9200
+        Index: MyIndex
 
 > alias
 Request: http://localhost:9200/_aliases?pretty=true
