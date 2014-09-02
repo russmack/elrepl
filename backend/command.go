@@ -23,6 +23,7 @@ type Resource struct {
 	Endpoint string
 	Alias    string
 	Routing  string
+	Id       string
 }
 
 func NewCommand(instr string, body string, name string, tokens []string) *Command {
