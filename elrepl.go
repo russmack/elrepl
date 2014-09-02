@@ -4,30 +4,15 @@ package main
 import (
 	"bufio"
 	"fmt"
+	"github.com/russmack/elrepl/backend"
+	_ "github.com/russmack/elrepl/commands"
 	"os"
 	"strings"
 )
 
-type Server struct {
-	host  string
-	port  string
-	index string
-}
-
-type LoadedRequest struct {
-	request string
-}
-
-var (
-	server          = Server{}
-	loadedRequest   = LoadedRequest{}
-	logLevel        = 0
-	HandlerRegistry = make(map[string]*Handler)
-)
-
 func init() {
-	server.host = "localhost"
-	server.port = "9200"
+	backend.Server.Host = "localhost"
+	backend.Server.Port = "9200"
 }
 
 func main() {
@@ -46,14 +31,14 @@ func displayWelcome() {
 
 func displayAvailableHandlers() {
 	fmt.Println("Handlers available:")
-	for k, _ := range HandlerRegistry {
+	for k, _ := range backend.HandlerRegistry {
 		fmt.Println(k)
 	}
 }
 
 func reploop() {
-	commandParser := NewCommandParser()
-	dispatcher := NewDispatcher()
+	commandParser := backend.NewCommandParser()
+	dispatcher := backend.NewDispatcher()
 	for {
 		fmt.Print("> ")
 		in := bufio.NewReader(os.Stdin)
@@ -63,16 +48,20 @@ func reploop() {
 			break
 		}
 		entry := strings.Trim(entered, "\t \r\n")
-		if logLevel > 0 {
-			log(entry, logLevel)
+		if backend.LogLevel > 0 {
+			log(entry, backend.LogLevel)
 		}
 		command, err := commandParser.Parse(entry)
 		if err != nil {
 			fmt.Println("Unable to parse command.")
 		}
-		output := dispatcher.Dispatch(command)
+		output, ok := dispatcher.Dispatch(command)
 		if len(output) > 0 {
-			fmt.Println(output)
+			if !ok {
+				fmt.Println(usageMessage(output))
+			} else {
+				fmt.Println(output)
+			}
 			fmt.Println("")
 		}
 	}
