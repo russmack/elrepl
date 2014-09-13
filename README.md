@@ -1,9 +1,14 @@
-elRepl
-======
+# elrepl
 
 An elasticsearch repl written in Golang.
 
+![Progress](http://progressed.io/bar/30?title=progress)
 
+---
+#### Status: Usable, occasionally quirky.
+---
+
+## Usage
 ```
 Commands:
 alias
@@ -75,3 +80,9 @@ Request: http://localhost:9200/_aliases?pretty=true
 > duplicatescount localhost 9200 index type field
 ...
 ```
+
+
+## License
+BSD 3-Clause: [LICENSE.txt](LICENSE.txt)
+
+[<img alt="LICENSE" src="http://img.shields.io/pypi/l/Django.svg?style=flat-square"/>](LICENSE.txt)
