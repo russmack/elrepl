@@ -5,7 +5,7 @@ An elasticsearch repl written in Golang.
 ![Progress](http://progressed.io/bar/30?title=progress)
 
 ---
-#### Status: Usable, occasionally quirky.
+#### Status: pre-alpha.
 ---
 
 ## Usage
