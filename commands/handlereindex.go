@@ -2,8 +2,7 @@ package commands
 
 import (
 	"fmt"
-	"github.com/mattbaird/elastigo/api"
-	"github.com/mattbaird/elastigo/core"
+	"github.com/mattbaird/elastigo/lib"
 	"github.com/russmack/elrepl/backend"
 	"regexp"
 	"strings"
@@ -62,12 +61,13 @@ func init() {
 }
 
 func (c *ReindexCmd) Reindex(dSource backend.Resource, dTarget backend.Resource) (string, bool) {
+	api := elastigo.NewConn()
 	api.Domain = dSource.Host
 	api.Port = dSource.Port
 
 	fmt.Println("Scanning...")
 	scanArgs := map[string]interface{}{"search_type": "scan", "scroll": "1m", "size": "1000"}
-	scanResult, err := core.SearchUri(dSource.Index, dSource.Type, scanArgs)
+	scanResult, err := api.SearchUri(dSource.Index, dSource.Type, scanArgs)
 	if err != nil {
 		fmt.Println("Failed getting scan result for index:", dSource.Index, "; err:", err)
 		return err.Error(), false
@@ -81,7 +81,7 @@ func (c *ReindexCmd) Reindex(dSource backend.Resource, dTarget backend.Resource)
 
 	fmt.Println("Scrolling...")
 	scrollArgs := map[string]interface{}{"scroll": "1m"}
-	scrollResult, err := core.Scroll(scrollArgs, scrollId)
+	scrollResult, err := api.Scroll(scrollArgs, scrollId)
 	if err != nil {
 		fmt.Println("Failed getting scroll result for index:", dSource.Index, "; err:", err)
 		return err.Error(), false
@@ -98,7 +98,7 @@ func (c *ReindexCmd) Reindex(dSource backend.Resource, dTarget backend.Resource)
 			api.Domain = dTarget.Host
 			api.Port = dTarget.Port
 
-			_, err := core.Index(dTarget.Index, dSource.Type, j.Id, indexArgs, j.Source)
+			_, err := api.Index(dTarget.Index, dSource.Type, j.Id, indexArgs, j.Source)
 			if err != nil {
 				fmt.Println("Failed inserting document, id:", j.Id, "; ", err)
 				failures++
@@ -112,7 +112,7 @@ func (c *ReindexCmd) Reindex(dSource backend.Resource, dTarget backend.Resource)
 		// ScrollId changes with every request.
 		scrollId = scrollResult.ScrollId
 		scrollArgs := map[string]interface{}{"scroll": "1m"}
-		scrollResult, err = core.Scroll(scrollArgs, scrollId)
+		scrollResult, err = api.Scroll(scrollArgs, scrollId)
 		if err != nil {
 			fmt.Println("Failed getting scroll result for index:", dSource.Index, "; err:", err)
 			return err.Error(), false

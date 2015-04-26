@@ -2,8 +2,7 @@ package commands
 
 import (
 	"fmt"
-	"github.com/mattbaird/elastigo/api"
-	"github.com/mattbaird/elastigo/core"
+	"github.com/mattbaird/elastigo/lib"
 	"github.com/russmack/elrepl/backend"
 	"regexp"
 	"strings"
@@ -37,12 +36,13 @@ func init() {
 		tgtIndex := matches[7]
 		tgtRouting := matches[9]
 
+		api := elastigo.NewConn()
 		api.Domain = srcHost
 		api.Port = srcPort
 
 		fmt.Println("Scanning...")
 		scanArgs := map[string]interface{}{"search_type": "scan", "scroll": "1m", "size": "1000"}
-		scanResult, err := core.SearchUri(srcIndex, srcType, scanArgs)
+		scanResult, err := api.SearchUri(srcIndex, srcType, scanArgs)
 		if err != nil {
 			fmt.Println("Failed getting scan result for index:", srcIndex, "; err:", err)
 			return err.Error(), false
@@ -56,7 +56,7 @@ func init() {
 
 		fmt.Println("Scrolling...")
 		scrollArgs := map[string]interface{}{"scroll": "1m"}
-		scrollResult, err := core.Scroll(scrollArgs, scrollId)
+		scrollResult, err := api.Scroll(scrollArgs, scrollId)
 		if err != nil {
 			fmt.Println("Failed getting scroll result for index:", srcIndex, "; err:", err)
 			return err.Error(), false
@@ -73,7 +73,7 @@ func init() {
 				api.Domain = tgtHost
 				api.Port = tgtPort
 
-				_, err := core.Index(tgtIndex, srcType, j.Id, indexArgs, j.Source)
+				_, err := api.Index(tgtIndex, srcType, j.Id, indexArgs, j.Source)
 				if err != nil {
 					fmt.Println("Failed inserting document, id:", j.Id, "; ", err)
 					failures++
@@ -87,7 +87,7 @@ func init() {
 			// ScrollId changes with every request.
 			scrollId = scrollResult.ScrollId
 			scrollArgs := map[string]interface{}{"scroll": "1m"}
-			scrollResult, err = core.Scroll(scrollArgs, scrollId)
+			scrollResult, err = api.Scroll(scrollArgs, scrollId)
 			if err != nil {
 				fmt.Println("Failed getting scroll result for index:", srcIndex, "; err:", err)
 				return err.Error(), false

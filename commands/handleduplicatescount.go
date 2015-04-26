@@ -3,8 +3,7 @@ package commands
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/mattbaird/elastigo/api"
-	"github.com/mattbaird/elastigo/core"
+	"github.com/mattbaird/elastigo/lib"
 	"github.com/russmack/elrepl/backend"
 	"regexp"
 	"sort"
@@ -56,11 +55,12 @@ func init() {
 }
 
 func (c *DuplicatesCountCmd) Do(d backend.Resource) (string, bool) {
+	api := elastigo.NewConn()
 	api.Domain = d.Host
 	api.Port = d.Port
 	fmt.Println("Scanning...")
 	scanArgs := map[string]interface{}{"search_type": "scan", "scroll": "1m", "size": "1000"}
-	scanResult, err := core.SearchUri(d.Index, d.Type, scanArgs)
+	scanResult, err := api.SearchUri(d.Index, d.Type, scanArgs)
 	if err != nil {
 		fmt.Println("Failed getting scan result for index:", d.Index, "; err:", err)
 		return err.Error(), false
@@ -71,7 +71,7 @@ func (c *DuplicatesCountCmd) Do(d backend.Resource) (string, bool) {
 	failures := 0
 	fmt.Println("Scrolling...")
 	scrollArgs := map[string]interface{}{"scroll": "1m"}
-	scrollResult, err := core.Scroll(scrollArgs, scrollId)
+	scrollResult, err := api.Scroll(scrollArgs, scrollId)
 	if err != nil {
 		fmt.Println("Failed getting scroll result for index:", d.Index, "; err:", err)
 		return err.Error(), false
@@ -112,7 +112,7 @@ func (c *DuplicatesCountCmd) Do(d backend.Resource) (string, bool) {
 		// ScrollId changes with every request.
 		scrollId = scrollResult.ScrollId
 		scrollArgs := map[string]interface{}{"scroll": "1m"}
-		scrollResult, err = core.Scroll(scrollArgs, scrollId)
+		scrollResult, err = api.Scroll(scrollArgs, scrollId)
 		if err != nil {
 			fmt.Println("Failed getting scroll result for index:", d.Index, "; err:", err)
 			return err.Error(), false
